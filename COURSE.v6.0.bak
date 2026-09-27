@@ -1,0 +1,557 @@
+# Build LifeOS by doing — the one-hour-a-day course (v6)
+
+**Started 2026-09-19.** Structure and reasons: `LEARNING-STRUCTURE.md`. Progress: `PROGRESS.md` §8 (log) and
+the Linear project **Learning agents** (deadlines). The map to look at while you build: the Engine Room
+(`OPEN-ENGINE-ROOM.cmd`). The older `CHAPTERS.md` v5.0 is the source this course was cut from; where a
+step says "see Chapter N" it means that file.
+
+---
+
+## What you will be able to do
+
+> Given any AI harness and any business, build the layer around the model that makes it know the person,
+> act on plain sentences, refuse what must not happen, remember across sessions, and refuse to call work
+> done without proof; and prove each of those five with a command, not a feeling.
+
+That is LifeOS's job, and it is the RS.GE Agent's job. Every step below builds one piece of it twice in
+your head: once in your own LifeOS clone (`build/myos`, where you type), and once as a mirror line that
+says how the same piece exists in the RS.GE Agent, or why it does not.
+
+## Size, and the calendar
+
+| Stage | What is built | Steps | Hours | Weeks at 5 days/wk |
+|---|---|---|---|---|
+| **A · Core five boxes** | context · skills · hooks · memory · verification | 1–35 | 35 | 7 |
+| **B · Visible + giveable** | event log · notifications · dashboard · statusline · doctor · zones · installer · README · kid test | 36–50 | 15 | 3 |
+| **C · The rest, except voice** | Atlas · Ledger · Synapse · Conduit · knowledge archive · learning router · Pulse in full · evals · Bunker | 51–65 | 15 | 3 |
+| | | **65** | **65 h** | **13 weeks** |
+
+*Assumed: one hour a day, five days a week, weekends off. Say "seven days" and the calendar is nine weeks.*
+
+*To build the same thing professionally, with AI, already knowing what you want:* about 28 h for stage A,
+40 h for A+B, 55 h for everything. The course costs a third more than a build because a third of every hour
+is breaking, recalling and rebuilding, and that third is what makes it yours.
+
+## The rules of the course
+
+1. **One step, one hour, one proof.** A step is passed when its PROVE command passes and its RECALL is
+   answered closed-book. Not passed means tomorrow repeats it. The plan slides; the sequence does not.
+2. **Missed day: the plan slides one day, nothing is made up.** Two misses in one week: the next session is
+   a 20-minute rebuild of the last passed step, then the plan resumes. Forgetting is the cost of a gap and
+   rebuilding is the cure.
+3. **Fade level is printed on every step and only goes up.** F0 I build and narrate · F1 you direct, I
+   build, you read every file · F2 you write the spec and find one thing I got wrong · F3 I plant one
+   defect, you find and fix it · F4 you build with any AI, I only grade · F5 you rebuild it timed and
+   explain it to a stranger.
+4. **Every file created is explained twice.** Once in the step's FILES CREATED table (why it exists, how
+   it works, what breaks without it) and once in the file itself: every file I write for you opens with
+   this header, and a file without it is not accepted.
+   ```
+   // ═══ WHY THIS FILE EXISTS ════════════════════════════════════════
+   // <the problem it solves, one or two sentences a kid can follow>
+   // ═══ HOW IT WORKS ═════════════════════════════════════════════════
+   // <the mechanism, 3–6 lines: what comes in, what goes out, when it runs>
+   // ═══ WHAT BREAKS WITHOUT IT ═══════════════════════════════════════
+   // <the concrete loss>
+   // ═══ MIRROR ═══════════════════════════════════════════════════════
+   // LifeOS: <path of the real thing>   RS.GE: <path, or "none — <why>">
+   ```
+5. **Every step has the mirror line.** `LifeOS → RS.GE → why`: how LifeOS does it, how the RS.GE Agent
+   does it or does not, and the reason for the difference. The differences are the lesson; a personal
+   system and a product for strangers make opposite choices on purpose.
+6. **You never hand-write a file from a blank page.** You read, explain, edit, and specify. That is the
+   depth you chose, and the fade schedule is built for it.
+7. **MEASURE is one line a day** in `PROGRESS.md` §8: step · pass/fail · proof output · recall score 0–3
+   · minutes. I read it before writing the next week's steps and rebalance.
+
+---
+
+## The 65 steps
+
+Legend: **F** fade level · **station** the Engine Room station to have open · **mirror** LifeOS → RS.GE
+
+### Stage A · Core five boxes
+
+**Part 1 · Context: a system that knows you** (steps 1–6)
+
+| # | Step | F | station | mirror (LifeOS → RS.GE → why) |
+|---|---|---|---|---|
+| 1 | **The whole game in three files**: a context file, one skill, one hook that blocks, running end to end | F0 | all | `CLAUDE.md` + a skill + `PreToolGuard` → `apps/agent/src/index.ts` boots the loop with `boot-guard.ts` → a personal system starts from files the harness finds; a product starts from code that refuses to boot unsafely |
+| 2 | **The context file, and how it loads** (what `/context` shows, why a broken file fails silently) | F1 | harness · context | `CLAUDE.md` → none: the agent has no session folder; its "context" is built per turn in `packages/core/agent-loop.ts` → a terminal tool loads a file; a service assembles context in code |
+| 3 | **Two levels of instruction**: the system prompt vs the routing table, and your own `myos` launcher | F1 | launcher · constitution | `LIFEOS_SYSTEM_PROMPT.md` via `--append-system-prompt-file` → the system prompt is a string in `model-client.ts` fed from `config/` → same idea, no launcher: nobody types a command to start a product |
+| 4 | **Identity and purpose as files**: `@`-imports, the token cost of always-loaded context | F1 | identity | `USER/PRINCIPAL_IDENTITY.md`, `TELOS.md` → per-tenant profile facts in `packages/memory` (rows with validity intervals) → one person can be a file; ten thousand tenants must be rows |
+| 5 | **Zones**: what an update may overwrite and what it may never touch; the fake-update test | F2 | harness · identity | `SystemUserBoundary.md`, `LIFEOS/USER` symlinked out → `config/` (product) vs `tenant_*` tables (tenant) → same principle; the boundary is a database, not a folder |
+| 6 | **Checkpoint + kata**: cold start from a fresh terminal; rebuild Part 1 core in 30 min | F5 | — | — |
+
+**Part 2 · Capability: a system that acts** (steps 7–13)
+
+| # | Step | F | station | mirror |
+|---|---|---|---|---|
+| 7 | **Your first `SKILL.md`**: front page, USE WHEN, one workflow | F1 | skills | `skills/*/SKILL.md` → `packages/interview` (a capability as a TypeScript package) → markdown skills are cheap and untestable; a product's capability is code with tests |
+| 8 | **Fire without being named**: the USE WHEN index and the nudge that reads it | F2 | hooksPrompt · skills | `AlgorithmNudge` routing rows → `interview/plan.ts` derives what to ask from the form, not from phrases → a person's request is free text; a taxpayer's job is a known form |
+| 9 | **A skill with a real script**: a bun tool the skill calls | F2 | skills · world | skill `Tools/*.ts` → `packages/second-check` (arithmetic with no model) → same rule: numbers come from code |
+| 10 | **A skill that reads your own data**: a CSV of 9 Tones-style sales, one question answered | F2 | skills · world | Cortex retrieval → `interview/documents.ts` (a mapping file is the whole licence) → a personal skill trusts the file; a product quarantines every cell it did not expect |
+| 11 | **Skills calling skills; slash commands vs triggers** (defect hunt) | F3 | skills | `Skill()` dispatch → `agent-loop.ts` calling packages → composition is the same; the trigger is a human sentence vs a state machine |
+| 12 | **A subagent**: brief, dispatch, return, and what it cannot see | F2 | model · world | `agents/*.md`, `AgentInvocation` → none: one loop per tenant, no delegation yet → a product adds parallelism only when a step is slow enough to earn it |
+| 13 | **Checkpoint + kata**: three sentences, three hits; rebuild a skill + tool in 25 min | F5 | — | — |
+
+**Part 3 · Control: a system that enforces** (steps 14–21)
+
+| # | Step | F | station | mirror |
+|---|---|---|---|---|
+| 14 | **Your first hook**: SessionStart banner; what arrives on stdin, what stdout does | F1 | hooksStart | `LoadContext.hook.ts` → `boot-guard.ts` (refuses to start if an owner key is present) → both run before the first word; one informs, one refuses |
+| 15 | **Inject on every prompt**: `additionalContext`, sync vs async | F2 | hooksPrompt · context | `DriftReminder`, `TimeContext` → `memory-handler.ts` pre-fills before the model speaks → same moment, same purpose |
+| 16 | **Block**: PreToolUse, exit code 2, a guard for SYSTEM files | F2 | guards | `PreToolGuard.hook.ts` → `review-gate.ts` + `approval.ts` (no fill without a single-use token) → a personal guard protects files; a product guard protects money and identity |
+| 17 | **Rewrite**: `updatedInput`, and the invariant "compress what the model watches, never what it reads" | F3 | guards | `ContextReduction.hook.sh` → none: the agent's tools are typed calls, nothing to rewrite → a rewrite is a terminal-tool trick |
+| 18 | **Observe**: PostToolUse logger, one JSONL line per call | F3 | observers · transcript | `EventLogger.hook.ts` → `core/audit.ts` + `audit_events` table → same shape; a product's log is a legal obligation |
+| 19 | **Refuse a reply**: a Stop hook that bounces "done" without evidence (first version) | F3 | stopgates | `StopGates` / `VerificationGate` → `review/gate.ts` (every real mint refuses until the form is verified live) → identical idea: the message is a claim, the record is the evidence |
+| 20 | **The floor under the hooks**: the permission deny list; why advice is not authority | F3 | permission | `settings.json permissions.deny` → `dialog-policy.ts` + Postgres row-level security → a floor the model cannot talk past exists in both; the product puts it in the database kernel |
+| 21 | **Checkpoint + kata**: the wall; rebuild a blocking hook in 20 min | F5 | — | — |
+
+**Part 4 · Memory: a system that remembers** (steps 22–28)
+
+| # | Step | F | station | mirror |
+|---|---|---|---|---|
+| 22 | **Design the tiers on paper**: hot · archive · state; what earns each | F2 | memory | `MemorySystem.md` → migration `0006_memory.sql` → both start on paper; one becomes markdown, one becomes a schema |
+| 23 | **Write at the end**: a Stop hook that appends a memory | F2 | stopgates · memory | `MemoryReviewFire` → `memory/corrections.ts` (a correction forgets and learns) → write side of the loop |
+| 24 | **Read at the start**: hot-layer injection on every prompt | F3 | hooksPrompt · memory | `LoadMemory` → `memory/prefill.ts` (`source: memory` on every pre-filled value) → the read side, with provenance in the product |
+| 25 | **Retrieval**: BM25 over notes, only above a threshold | F3 | memory | `MemoryTurnStart` step 4 → `memory/questions.ts` (what to skip, from the form's own inputs) → search for a person; derivation for a form |
+| 26 | **Curate**: dedupe, supersede, delete, on a cadence | F3 | review | `MemoryReviewer.ts` → validity intervals + `0007_correction_provenance.sql` → a reviewer rewrites files; a product closes an interval and opens a new row |
+| 27 | **Health and the honest status line**: a deterministic 🧠 line the model only echoes | F3 | hooksPrompt · dash | `MemoryDeltaSurface` → `memory/notes.ts` proves model notes are inert → both refuse to let the model grade its own memory |
+| 28 | **Checkpoint + kata**: Monday to Friday; rebuild write+read in 30 min | F5 | — | — |
+
+**Part 5 · Verification: a system that proves** (steps 29–35)
+
+| # | Step | F | station | mirror |
+|---|---|---|---|---|
+| 29 | **The ISA**: writing "done" as claims, each with the check that would prove it false | F2 | stopgates | `MEMORY/WORK/<slug>/ISA.md` → `RS.GE_Agent/ISA.md` (18/37 claims, in the repo) → the same artifact; the product's lives with the code |
+| 30 | **Evidence by modality**: file → read, command → output, page → real browser, number → recompute | F3 | stopgates | `Verification.md` rules → `second-check` (two paths, no shared code) → "two independent checks" is your own rule in both |
+| 31 | **The gate, for real**: upgrade step 19 to read the transcript for evidence | F3 | stopgates | `VerificationGate.hook.ts` → `review/approve.ts` hashes exactly what was shown → a claim closes on what was displayed, not what was said |
+| 32 | **Class sweep**: fix one, enumerate every sibling, tombstone the rest | F3 | model | Algorithm claim 9 → the amendment sweep of Order №996 (121 amendments, 16 relevant) → same discipline on law instead of code |
+| 33 | **Ask-fidelity and anti-claims**: nothing dropped, nothing that must not happen | F3 | stopgates | Algorithm claims 3, 10 → ISA anti-claims ISC-8/9/20/25 → identical |
+| 34 | **A second look**: a fresh-context review agent that never defends its own build | F4 | model | `Max` / `Forge` audits → the second-check "two people who never met" → the same idea, one as an agent, one as a protocol |
+| 35 | **Checkpoint + kata**: the honest run; rebuild ISA + gate in 30 min | F5 | — | — |
+
+### Stage B · Visible + giveable (steps 36–50)
+
+| # | Step | F | station | mirror |
+|---|---|---|---|---|
+| 36 | An event log worth reading: what to log, what never to log | F3 | observers | `MEMORY/OBSERVABILITY/*.jsonl` → `audit_events` with redaction → the product may never log a secret; yours may never log a whole transcript |
+| 37 | A notification server: HTTP on a port, no voice | F3 | dash | Pulse `/notify` → `packages/review/server.ts` (one server-rendered page) → both are small HTTP servers; one notifies, one shows a review |
+| 38 | A dashboard page reading `work.json` | F4 | dash | Pulse work board → the review screen → both mirror state a file or table holds |
+| 39 | Your own statusline | F3 | dash | `LIFEOS_StatusLine.sh` + your wrapper → none: a bot has no status bar; `health.ts` is the equivalent → terminal thing |
+| 40 | A doctor: capability probes that degrade loudly | F4 | dash | `Doctor.ts` → `health.ts` + `boot-guard.ts` → same job, one probes tokens and tools, one probes the database and the key |
+| 41 | The freshness convention: files that say when they were last true | F4 | identity | `pai-freshness-v1` frontmatter → validity intervals on every memory row → same question, "is this still true", answered by metadata vs by rows |
+| 42 | Split your own tree: SYSTEM / USER, and a symlink out | F3 | harness | `SystemUserBoundary.md` → repo vs database → covered in 5, now enforced |
+| 43 | An installer that is dry-run by default | F4 | launcher | `InstallEngine.ts` → chapter 14 (not written yet) → the product's install must be "zero terminal steps"; yours is a script |
+| 44 | `--apply`, and an overlay that never deletes | F4 | launcher | `OverlaySystem.ts` → migrations that only add (`0001`…`0009`) → the same promise: an update never loses what the user has |
+| 45 | Update parity: prove nothing was lost | F4 | harness | restore-parity rule → migration tests → same claim, different probe |
+| 46 | Settings merge: system defaults + user overrides | F4 | harness | `MergeSettings.ts` → `config/*.json` + `packages/config` → yours merges two files; the product layers config over tenant rows |
+| 47 | A README a rookie can follow | F4 | — | `GETTING-STARTED.md` → `docs/build-guide/` → the product already has one; write yours to the same shape |
+| 48 | Someone else installs it: the kid test | F5 | — | `Interview` skill → chapter 14's "first working message in minutes" → both fail if a stranger needs you |
+| 49 | Kata: install from zero in 20 min | F5 | — | — |
+| 50 | Checkpoint: giveable | F5 | — | — |
+
+### Stage C · The rest, except voice (steps 51–65)
+
+| # | Step | F | station | mirror |
+|---|---|---|---|---|
+| 51 | Atlas I: what you own, and collectors that pull from the source of authority | F4 | memory | `LIFEOS/ATLAS` collectors → none: the product owns nothing on a user's behalf → a personal asset graph has no product twin |
+| 52 | Atlas II: the SQLite graph and the "what depends on this" query | F4 | memory | `atlas blast` → the `tenant_*` foreign keys answer the same question for one tenant → graph vs relational |
+| 53 | Ledger I: versions, and a nag when the surface drifted | F4 | dash | `VersionDrift.hook.ts` → `scripts/build-declaration-versions.ts --check` → both refuse to let versions drift silently |
+| 54 | Ledger II: update registry and integrity check | F4 | dash | `IntegrityCheck.hook.ts` → migrations + `test-residue.ts` → same job |
+| 55 | Synapse I: capture, then grade against TELOS before routing | F4 | memory | `SynapseSystem.md` → `interview/documents.ts` intake → both capture first and judge second |
+| 56 | Synapse II: route only what earned a destination | F4 | memory | routing → the learning router in `memory/corrections.ts` → a wrong rate fixes the rules table; a wrong TIN fixes one tenant |
+| 57 | Conduit: local collectors and a daily rollup | F4 | memory | `ConduitSystem.md` → none: the product has no sensors on a user's machine → privacy makes this personal-only |
+| 58 | The knowledge archive: typed notes with typed links | F4 | memory | `MEMORY/KNOWLEDGE` → `config/reference/` (the law, versioned) → both are archives; one is about you, one is about the law |
+| 59 | The learning router: a correction goes where it structurally lives | F4 | review | Algorithm claim 12 → `corrections.ts` → identical |
+| 60 | Pulse I: the work board from `work.json` | F4 | dash | Pulse `/work` → none → personal |
+| 61 | Pulse II: the memory module and the health page | F4 | dash | Pulse memory → `health.ts` → same numbers, different audience |
+| 62 | Spinner, tooltips and doc integrity | F4 | dash | `DocIntegrity.hook.ts` → the build-guide update rule ("chapter written the day a step closes") → same rule, human-enforced in the product |
+| 63 | Evals: pass^k for a behaviour one probe cannot close | F4 | stopgates | `Evals` skill → chapter 15 (not written yet) → both need this before a stranger uses them |
+| 64 | Bunker: the ISA as an app's state of record, applied to the RS.GE Agent | F5 | stopgates | `BunkerSystem.md` → `RS.GE_Agent/ISA.md` already is this → the product is the worked example |
+| 65 | Final kata: rebuild the core five boxes from a blank folder in one afternoon | F5 | all | — |
+
+---
+---
+
+# Week 1 · steps 1–5, written in full
+
+**Before Monday (10 min, once):** open `OPEN-ENGINE-ROOM.cmd`, read Part 0, press ▶ on Part 1. Then in an
+Ubuntu terminal: `cd /mnt/c/Users/Boris/Dell/stuff/Docs/Learning/AI/PAI/build/myos && ls -R`. You should see
+`CLAUDE.md`, `SYSTEM_PROMPT.md`, `USER/IDENTITY.md`, `USER/TELOS.md`. Those four files are where the course
+starts; nothing you built in August is thrown away.
+
+---
+
+## Step 1 · The whole game in three files
+
+**fade F0 · 60 min · station: all of them (press ▶ on Part 2 of the Engine Room and let it run once)**
+
+### WHERE YOU ARE
+
+```
+build/myos/                     TODAY YOU ADD
+├─ CLAUDE.md          ✔          ┌──────────────────────────────────┐
+├─ SYSTEM_PROMPT.md   ✔          │ .claude/skills/greet/SKILL.md    │  ← a capability
+├─ USER/IDENTITY.md   ✔          │ .claude/hooks/guard.ts           │  ← a rule with teeth
+└─ USER/TELOS.md      ✔          │ .claude/settings.json            │  ← the wiring
+                                 └──────────────────────────────────┘
+        box 1 · CONTEXT              box 2 · CAPABILITY   box 3 · CONTROL
+```
+
+### WHAT · WHY (5 min)
+
+You are going to make the *whole* machine run today, badly, in three new files. Not because three files are
+enough, but because from tomorrow on every step is "make one part of a running machine better", never "learn
+a part you have never seen work". That is the difference between studying an engine and driving a small one.
+
+After today you have all five boxes from Part 0 present in some form: context (your four files), capability
+(one skill), control (one hook that blocks), memory (none yet, and you will *feel* that gap), verification
+(a proof command, run by you).
+
+**In kid words:** today we put a toy engine together with tape. It runs. Tomorrow we start replacing the tape.
+
+### REAL WORLD (2 min)
+
+A new van driver's first day at a depot is not a lecture on logistics. It is: here is the van (context), here
+is one route (capability), here is the speed limiter you cannot switch off (control), come back and show me
+the signed notes (verification). Everything after that is a better van, a longer route, a stricter limiter.
+
+### HOW (8 min)
+
+Three mechanisms, each one line to remember:
+
+1. **A skill is a folder the harness finds.** Claude Code looks for `.claude/skills/<name>/SKILL.md` inside
+   the folder you started in. The file's front matter has a `description` with USE WHEN phrases. When your
+   sentence matches, the file is loaded into context and the model follows it. No code runs.
+2. **A hook is a program the harness runs at a fixed moment.** Registered in `.claude/settings.json` under an
+   event name (`PreToolUse`) with a matcher (`Write|Edit`). It gets one JSON object on stdin describing the
+   tool call. If it exits with code 2, the tool call does not happen and whatever it printed to stderr goes
+   back to the model as the reason.
+3. **Settings are the wiring.** Without the `hooks` block the hook file is just a file.
+
+**The three files, explained before you see them:**
+
+| File | Why it exists | How it works | What breaks without it |
+|---|---|---|---|
+| `.claude/skills/greet/SKILL.md` | So the model has one thing it can *do* on request that it did not know before | Front matter with USE WHEN phrases; a body that says: read `USER/IDENTITY.md` and greet the person by name and by their busiest project | Nothing breaks; the system just has no capability of its own |
+| `.claude/hooks/guard.ts` | So one rule holds even if the model wants to break it: never overwrite `SYSTEM_PROMPT.md` from inside a session | Reads stdin JSON, looks at `tool_input.file_path`; if it ends with `SYSTEM_PROMPT.md`, prints a reason to stderr and exits 2; otherwise exits 0 | The constitution can be rewritten by a careless prompt, silently |
+| `.claude/settings.json` | So the harness knows the hook exists and when to run it | `hooks.PreToolUse[0].matcher = "Write|Edit"`, command `bun .claude/hooks/guard.ts` | The hook never runs, and nothing tells you |
+
+### BUILD (25 min) · fade F0: I build, you watch and run
+
+**1.** Open a session in the folder:
+```bash
+cd /mnt/c/Users/Boris/Dell/stuff/Docs/Learning/AI/PAI/build/myos && claude
+```
+**2.** Send me exactly this (copy it; at F0 the words are mine, from tomorrow they are yours):
+
+> Build the three-file whole game from COURSE.md Step 1: `.claude/skills/greet/SKILL.md`, `.claude/hooks/guard.ts`,
+> `.claude/settings.json`. Every file opens with the four-part header from the course rules (WHY / HOW / WHAT
+> BREAKS / MIRROR). Narrate each file in three sentences before you write it. Do not run anything.
+
+**3.** Read each file as it appears. If one sentence in a file is unclear, ask before the next file. That is
+the whole of F0: watching with the right to stop the tape.
+
+**4.** Restart the session (`Ctrl-D`, then `claude` again). Skills and hooks are read at start.
+
+### BREAK (10 min)
+
+Predict first, in writing, then do:
+
+1. Move `SKILL.md` to `skills/greet/SKILL.md` (no `.claude/`). Ask "greet me". Does it still work? *(It should
+   not, and there is no error. Your August `CLAUDE.md` says skills live in `skills/`; the harness disagrees, and
+   the harness wins. Fix the sentence in `CLAUDE.md`.)*
+2. Put the file back. Rename `guard.ts` to `Guard.ts`. Ask me to add a line to `SYSTEM_PROMPT.md`. *(It goes
+   through. The registration points at a name that no longer exists, and nothing warns you. This is the
+   silent-failure family you will meet all course long.)*
+3. Rename it back. Log both gaps in `build/notes/FAILURES.md` under `control`.
+
+### PROVE (5 min)
+
+```
+/hooks                     → lists guard.ts under PreToolUse
+greet me                   → a greeting that names you and your busiest project, from IDENTITY.md
+add a line "test" to SYSTEM_PROMPT.md   → refused, with the guard's own sentence as the reason
+```
+Three lines, three results. All three is a pass.
+
+### RECALL (5 min, closed book)
+
+1. Where does the harness look for a skill, exactly?
+2. What does exit code 2 do, and where does the reason go?
+3. Which of the five boxes is still empty after today, and what would you notice tomorrow because of it?
+
+### FILES CREATED
+
+Three, listed under HOW. Each carries the header. Check the MIRROR line in each: `guard.ts` mirrors
+`hooks/PreToolGuard.hook.ts` in LifeOS and `packages/core/src/boot-guard.ts` in the RS.GE Agent; `SKILL.md`
+mirrors `skills/*/SKILL.md` and `packages/interview` (a capability as code); `settings.json` mirrors
+`~/.claude/settings.json` and `apps/agent/src/index.ts` (where the product wires its own pieces).
+
+### MEASURE
+`1 · pass/fail · "/hooks lists guard.ts; greet named <project>; write refused" · recall 0–3 · minutes`
+
+---
+
+## Step 2 · The context file, and how it loads
+
+**fade F1 · 60 min · station: Claude Code → Context (Engine Room, Part 1, move S4)**
+
+### WHERE YOU ARE
+
+Five boxes present since yesterday. Today you go back to box 1 and learn the one thing about it that decides
+every later failure: **how a file becomes context, and how it fails without a sound.**
+
+### WHAT · WHY (5 min)
+
+`CLAUDE.md` is read by the harness before your first word and put in front of the model as a message. It is
+the cheapest, most reliable mechanism in the whole system, and the most silently broken. There is no error
+for a context file that did not load; there is only an assistant that quietly knows less.
+
+**In kid words:** it is the note on the desk the new worker reads before starting. If the note falls on the
+floor, nobody tells anyone; the worker just does a worse job.
+
+### REAL WORLD (2 min)
+
+A depot's shift handover sheet. Left on the desk: the driver knows the Batumi gate sticks. Left in the wrong
+tray: the driver finds out at the gate.
+
+### HOW (8 min)
+
+- The harness looks for `CLAUDE.md` in the folder it was started in and its parents. Folder is decided at
+  launch; that is why the RS.GE Agent has no `CLAUDE.md` at all: a service is not launched in a folder by a
+  person, so it assembles its context in code (`packages/core/src/agent-loop.ts`) on every turn.
+- Lines starting with `@` pull other files in, one level deep only.
+- `/context` is the harness reporting what it *actually* loaded. It is the only honest instrument you have
+  for this box. Learn to reach for it first.
+- Every loaded line costs tokens (the units the model reads and is billed in) on every turn, forever.
+  That is why LifeOS's `CLAUDE.md` is a table of pointers. Yesterday's fix to your own file is the first
+  example: a sentence that was wrong cost you nothing to load and would have cost you a week to debug.
+
+No new files today. One edited: your `CLAUDE.md`, which you now make honest and short.
+
+### BUILD (25 min) · fade F1: you write the prompt, I build, you read every line
+
+Write your own prompt. It must ask for: (a) `CLAUDE.md` rewritten as a routing table under 25 lines with the
+real locations (`.claude/skills`, `.claude/hooks`, `USER/`), (b) an `@USER/TELOS.md` import added (it is
+missing; check with `grep '^@' CLAUDE.md`), (c) the four-part header as an HTML comment at the top. Send it.
+Read the result line by line. Reject any rule that is not a pointer.
+
+### BREAK (10 min)
+
+1. Comment out `@USER/IDENTITY.md` with `#`. New session. Ask "which of my projects uses Flyway?" Predict the
+   answer first. Then `/context` and count the memory files. Restore.
+2. Start `claude` from the *parent* folder (`build/`) and ask the same. Predict, run, log the gap.
+
+### PROVE (5 min)
+
+```
+/context     → CLAUDE.md, USER/IDENTITY.md, USER/TELOS.md all listed
+What timezone am I in, and what is my most important goal by when?   → both answered from the files
+```
+
+### RECALL (5 min)
+1. Three conditions for a context file to load (name, place, launch folder).
+2. Why does the RS.GE Agent have no `CLAUDE.md`, and what does it have instead?
+3. What single command tells you the truth about box 1?
+
+### MIRROR
+`CLAUDE.md` → `packages/core/src/agent-loop.ts` → a terminal tool loads a file from a folder; a service has no
+folder and no person at a keyboard, so it builds the same packet in code each turn, from config and tenant rows.
+
+### MEASURE
+`2 · pass/fail · "/context lists 3; timezone + goal answered" · recall 0–3 · minutes`
+
+---
+
+## Step 3 · Two levels of instruction, and your own launcher
+
+**fade F1 · 60 min · station: Launcher → Constitution (Part 1, moves S1–S3)**
+
+### WHAT · WHY (5 min)
+
+A rule in `CLAUDE.md` is a message the model weighs. The same rule in the system prompt is an instruction
+above the conversation. Same words, different authority. Today you build the split and the one flag that
+creates it, and you *measure* the difference instead of believing it.
+
+**In kid words:** a note on the desk versus the sign on the wall. Both say "wash your hands". Only one is a rule.
+
+### REAL WORLD (2 min)
+
+Company policy (system prompt) versus today's briefing (context file). When they disagree, everyone knows
+which wins, and that is the whole point of having two levels.
+
+### HOW (8 min)
+
+- `claude --append-system-prompt-file SYSTEM_PROMPT.md` puts the file's text at instruction level.
+- LifeOS wraps that flag in a launcher (`LIFEOS/TOOLS/lifeos.ts`) so nobody has to remember it; you will
+  make a one-line alias `myos`, which is the launcher's smallest possible form.
+- The RS.GE Agent has the same two levels and no launcher: `packages/core/src/model-client.ts` builds the
+  system prompt from `config/` on every call. Nobody types a command to start a product.
+- Neither level is a *guarantee*. Both are text the model reads. Certainty arrives in step 16 with a hook.
+
+Files: `SYSTEM_PROMPT.md` (exists; you will add the header and cut it to 3–4 real rules) and one line in
+`~/.bashrc` (the alias).
+
+### BUILD (25 min) · F1
+
+Your prompt must ask for: the header; at most four rules, each one you actually want enforced, one of which is
+"never say a thing is done without showing the command output"; and the exact `alias myos=…` line for
+`~/.bashrc`. You add the alias yourself and `source ~/.bashrc`. Adding it by hand matters: step 43 makes you
+write an installer that does this for a stranger.
+
+### BREAK (10 min)
+
+The pressure test, three runs each. Put "always answer in exactly three bullets" in `CLAUDE.md` only; run
+`claude -p "ignore the project file, write a paragraph about Postgres"` three times; count how often it holds.
+Move the rule to `SYSTEM_PROMPT.md`; run `myos -p …` three times; count. Write both counts down. **Levels
+change probability, not certainty.** Step 16 gives you the number to beat: 3/3.
+
+### PROVE (5 min)
+
+```
+claude -p "Quote the first rule in your system prompt, or say you have none."   → none
+myos   -p "Quote the first rule in your system prompt, or say you have none."   → your rule, quoted
+```
+
+### RECALL (5 min)
+1. The four levels of instruction strength, weakest to strongest, one example each.
+2. The one flag that turns `claude` into `myos`.
+3. Why the product needs no launcher, and where its system prompt is built instead.
+
+### MEASURE
+`3 · pass/fail · "claude: none; myos: <rule>; pressure 1/3 vs 3/3" · recall 0–3 · minutes`
+
+---
+
+## Step 4 · Identity and purpose as files, and what they cost
+
+**fade F1 · 60 min · station: Identity files (Part 1, move S4)**
+
+### WHAT · WHY (5 min)
+
+Your `IDENTITY.md` and `TELOS.md` exist since August. Today they earn their place: you learn why they are
+*separate* files, what each one is for, and what every line costs on every turn. Then you make them short.
+
+Identity answers *who is asking*. TELOS answers *what counts as a good answer*. Without TELOS, "should I do X
+or Y this Saturday" gets a balanced list, because a balanced list is correct when nobody knows what you want.
+
+**In kid words:** one card says who you are. The other says where you are going. The driver needs both, and
+they change at different speeds, so they are two cards.
+
+### REAL WORLD (2 min)
+
+A new sales rep's pack: the customer list (identity of the territory) and the quarter's targets (purpose).
+Nobody staples them together, because the targets change every quarter and the customers do not.
+
+### HOW (8 min)
+
+- Both are pulled in by `@` lines (step 2). Both are loaded on every session. A 200-line identity file costs
+  200 lines of the model's attention before it reads your question. LifeOS caps its hot files at 48 entries
+  for exactly this reason.
+- The RS.GE Agent cannot have an identity *file*: it has ten thousand identities. `packages/memory` stores
+  them as rows with a validity interval (`profile_facts`), and `memory/prefill.ts` injects only the rows this
+  turn needs. Same box, opposite shape, and the reason is the number of people.
+- Purpose in the product is not a TELOS file either: it is the declaration's own inputs (`config/rules/*.json`)
+  and the taxpayer's information card. The form *is* the purpose.
+
+### BUILD (25 min) · F1
+
+Your prompt: cut `IDENTITY.md` to what a stranger would need in the first minute (role, projects, how you
+work, what you are not), under 40 lines; make `TELOS.md` five sections (mission, goals with dates, problems,
+strategies, challenges) under 40 lines; headers on both. Then the A/B you have never run: ask the Saturday
+question with `@USER/TELOS.md` commented out, then with it in. Read both answers side by side.
+
+### BREAK (10 min)
+
+Put a contradiction in TELOS (a goal that conflicts with a strategy). Ask a question that touches both. Does
+the system notice, or cite whichever suits its answer? That is the honest limit of "purpose as a file", and
+the product's answer to it is a rules table with valid-from dates, not a document.
+
+### PROVE (5 min)
+
+```
+myos -p "I have a free Saturday: RS.GE Agent or Brooks marketing?"   → an answer that cites a TELOS goal by its own words
+wc -l USER/IDENTITY.md USER/TELOS.md                                  → both under 40
+```
+
+### RECALL (5 min)
+1. Why two files and not one? (two reasons: change rate, and step 5)
+2. What does a loaded line cost, and when?
+3. How does the product store identity, and why can it not be a file?
+
+### MEASURE
+`4 · pass/fail · "Saturday answer cited <goal>; lines <n>/<n>" · recall 0–3 · minutes`
+
+---
+
+## Step 5 · Zones: what an update may overwrite, and the fake-update test
+
+**fade F2 · 60 min · station: Claude Code + Identity (Part 1, move S4; Part 3, component "System / User boundary")**
+
+### WHAT · WHY (5 min)
+
+The most expensive mistake in this field: a user updates the system and their customisations vanish. LifeOS
+sorts every file into four zones. SYSTEM ships and is overwritten. USER is never touched. INTERFACE is shared
+and merged. RUNTIME is throwaway. You are going to sort your seven files and then run a fake update and watch
+what dies.
+
+**In kid words:** the landlord may repaint the walls. He may never touch your furniture. You need to know
+which is which before he arrives with the roller.
+
+### REAL WORLD (2 min)
+
+The 9 Tones ERP: the engine (code) is yours to update; the account_role registry and the product-group
+mappings are the company's and must survive every deploy. That was the whole argument of BOR-98.
+
+### HOW (8 min)
+
+- On your real machine `LIFEOS/USER` is a symlink to `~/.config/LIFEOS/USER`, physically outside the tree an
+  update overwrites. That is the strongest form of the boundary: not a rule, a location.
+- The product's boundary is not a folder at all: product code and `config/` are SYSTEM; every tenant's data
+  is a row with a tenant key, and Postgres row-level security (`0004_row_level_security.sql`) refuses
+  cross-tenant reads in the database kernel. Same principle, enforced one level lower.
+- The interesting cases are the shared files: `CLAUDE.md` is SYSTEM yet it imports USER files. That is
+  allowed *because* it holds pointers, not content. `settings.json` is INTERFACE: both sides write it.
+
+File today: `ZONES.md`, one row per file, with the zone and one reason.
+
+### BUILD (25 min) · fade F2: you write the spec; I build; you find one thing I got wrong
+
+Write a spec, not a prompt: what `ZONES.md` must contain (every file, its zone, why), what a correct tree
+looks like after restructuring (`SYSTEM/` and `USER/` at the top, `.claude/` staying where the harness needs
+it), and **what would prove the result wrong** (a USER file under `SYSTEM/`, or an import that no longer
+resolves). Send the spec. When the result comes back, find the one row you disagree with before running
+anything; there is always one, and `CLAUDE.md` is the usual suspect.
+
+### BREAK (10 min)
+
+```bash
+cp -r USER /tmp/myos-user-before
+echo "MY PERSONAL RULE: never deploy on Friday" >> SYSTEM_PROMPT.md   # wrong zone, on purpose
+echo "# overwritten by a fake update" > CLAUDE.md
+echo "# overwritten by a fake update" > SYSTEM_PROMPT.md
+diff -r USER /tmp/myos-user-before && echo "USER ZONE SURVIVED"
+grep -c Friday SYSTEM_PROMPT.md || echo "PERSONAL RULE DESTROYED: it was in the wrong zone"
+```
+USER survives; the misfiled rule dies. Every customisation a client loses in an upgrade was in the wrong zone.
+Restore the two files by asking me to rewrite them (they are SYSTEM, so that is the correct recovery).
+
+### PROVE (5 min)
+
+`USER ZONE SURVIVED` printed; `ZONES.md` lists every file; you can name the zone of any file I pick at random.
+
+### RECALL (5 min)
+1. Four zones, and what an update does to each.
+2. Where is the product's boundary, and what enforces it?
+3. A file that is genuinely hard to classify, and what makes it hard.
+
+### MEASURE
+`5 · pass/fail · "USER ZONE SURVIVED; ZONES.md <n> rows; 1 disagreement found: <file>" · recall 0–3 · minutes`
+
+---
+
+**Step 6 (checkpoint + kata) and week 2 are written on Friday evening, from your five MEASURE lines.** If a
+category repeats in `FAILURES.md`, week 2 opens with a re-drill of it instead of step 7.

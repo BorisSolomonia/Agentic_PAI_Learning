@@ -1,0 +1,42 @@
+import type { Component } from '../schema';
+
+export const component: Component = {
+  id: 'algorithm',
+  name: 'The Algorithm',
+  box: 'verification',
+  status: 'Specification shipped. The doctrine file at LIFEOS/ALGORITHM/ ships as a contract the model reads and follows, and the hooks that enforce parts of it mechanically ship as code and are registered in this install.',
+  summary: 'The rulebook for how a piece of work gets done: write down what finished means, then refuse to call anything finished until a tool has proved it.',
+  purpose: 'A capable [[model]] will happily announce that something works without having checked. The [[Algorithm]] is the contract that closes that gap: it states what has to be true when a run is complete, and it makes a completion claim without proof mechanically expensive rather than merely frowned upon.',
+  who: 'lifeos',
+  trigger: 'Substantial work triggers it, meaning anything where done needs articulating, building or verifying. The constitutional rules tell the model its first action for such work is to read `LIFEOS/ALGORITHM/LATEST` for the version string, then read the matching version file. Trivial turns skip the whole thing. Separately, `hooks/AlgorithmNudge.hook.ts` runs on every [[prompt]] and on every failed [[tool call]], and `hooks/StopGates.hook.ts` runs at the [[Stop gate]] when the model tries to finish its [[turn]].',
+  input: 'Your request, plus whatever the run discovers: failed probes, corrections you make mid-run, constraints found in the code. The doctrine file itself is the standing input.',
+  output: 'A completed piece of work whose claims each closed on real [[evidence]], an [[ISA]] that is different at the end than it was at the start, and a reflection record appended to a [[JSONL]] corpus for later auditing.',
+  files: [
+    { path: 'LIFEOS/ALGORITHM/LATEST', mode: 'read', note: 'one line holding the current version string; the single source of truth for which file to read' },
+    { path: 'LIFEOS/ALGORITHM/v8.20.2.md', mode: 'read', note: 'the doctrine file: sixteen claims about what a complete run must satisfy' },
+    { path: 'hooks/AlgorithmNudge.hook.ts', mode: 'exec', note: 'registered on UserPromptSubmit and PostToolUseFailure; fires bounded questions at the moment they are answerable' },
+    { path: 'hooks/StopGates.hook.ts', mode: 'exec', note: 'registered on Stop; the gate chain that blocks a completion claim that has not earned it' },
+    { path: 'LIFEOS/TOOLS/ascent.ts', mode: 'exec', note: 'the one derivation of run state that every display surface reads' },
+    { path: 'LIFEOS/TOOLS/Reflect.ts', mode: 'exec', note: 'writes the post-run self-critique record' },
+  ],
+  how: 'The loop is one sentence: move a thing from its [[current state]] to its [[ideal state]] by climbing a hill you define as you climb it. That is [[hill climbing]], and the [[ISA]] is both the hill and the measuring instrument. Each [[claim]] in the ISA names the [[probe]] that would prove it false, so the specification is also the test suite. The doctrine file states the rule bluntly: without tool evidence there is no up or down, only motion.\n\nThe doctrine is written as an outcome contract, not a procedure. `LIFEOS/ALGORITHM/v8.20.2.md` lists sixteen things that must be true when a run is complete, and explicitly leaves how to get there to the model. Every claim is tagged with how it is enforced. HOOK means a [[deterministic]] gate blocks it. CHECK means the run executes a check and records the result. SELF means honest self-attestation, labelled as such because the system knows self-attestation decays. That labelling came from auditing its own history: rules that lived only as prose measured 11 to 22 percent real compliance while self-scored audits reported near-perfect numbers.\n\nThe live layer is `hooks/AlgorithmNudge.hook.ts`. Rather than standing prose telling the model what to do whenever X happens, it asks a bounded question at the moment the question is answerable. The rows are constrained by construction: a row may only ask about an outcome already stated in the doctrine file, and only about state the model cannot see from its own [[context]], such as an ISA that has gone stale or the [[blast radius]] of a destructive operation. A row that maps a phrase to a mandated procedure is banned.\n\nOne design decision is worth naming because it is unusual. There is no effort tier, no complexity rubric and no classifier anywhere. Spend is discovered from the work rather than predicted before it. The mechanism is the claims themselves: you cannot close what you did not verify, so hard work with deep verification pulls in agents, audits and stronger models on its own, and a two-claim task cannot justify ceremony. Earlier versions did predict effort, with tiers and a model-routing rubric, and all of it was retired in mid-2026 because prediction before work failed in both directions.',
+  sources: [
+    'LIFEOS/ALGORITHM/v8.20.2.md',
+    'LIFEOS/DOCUMENTATION/Algorithm/AlgorithmSystem.md',
+    'LIFEOS/DOCUMENTATION/CoreComponents.md',
+    'LIFEOS/LIFEOS_SYSTEM_PROMPT.md:L1-L60',
+  ],
+  alternatives: [
+    { name: 'Trust the model and read the output yourself', tradeoff: 'Wins on zero overhead and zero ceremony, which is right for most small asks. Costs you the review: you become the [[verification gate]], you catch what you happen to look at, and the failures that survive are the ones nobody thought to check.' },
+    { name: 'A fixed phase checklist the model must walk', tradeoff: 'Wins on predictability, since every run looks the same and is easy to audit. Costs capability, because scripted steps cap a strong model below its ability and rot as models improve. LifeOS ran this and retired it: measured compliance for prose-only steps was low while the self-scores stayed high.' },
+    { name: 'Route work by a complexity rubric before starting', tradeoff: 'Wins on budget control, because you know the spend before you commit. Costs accuracy in both directions, since difficulty is a property of the work and shows up in the [[evidence]] gates, not in the wording of the request. LifeOS shipped tiers and deleted them for exactly this.' },
+  ],
+  why: 'The Algorithm keeps only four kinds of thing, and the admission test for anything new is whether it is context, an artifact, a tooth or an instrument. If it is a step, a floor, a ritual or a self-score, it does not ship. That is why the doctrine reads as an outcome contract rather than a recipe. The teeth exist because the same audit that produced the doctrine also produced the empirical law behind it: declarative rules without mechanical enforcement decay. The cost is that a real run is slower and noisier than a confident guess. You get nudges mid-run, gates at the close, and a refusal to say done when there is no proof. On a five-minute task that overhead would be absurd, which is exactly why trivial turns are exempt.',
+  examples: [
+    { field: 'distribution', text: 'A rep reports that the customer statement shows the wrong balance. The Algorithm shape is: reproduce the wrong balance on that customer before opening any code, write done as a claim that the statement total equals the sum of its open invoices for that account, then close the claim only on a query result you actually ran. The class sweep is the part people skip: if one account was wrong because of how credit notes were signed, every account with a credit note has to be enumerated and checked, not just the one that got reported.' },
+    { field: 'kitchen', text: 'A head chef does not sign off a new dish because it looked right leaving the pass. Done is written down first as things anyone can check: the sauce holds for twelve minutes under a lamp, the plate leaves at 63 degrees, two cooks who did not design it can make it from the card. Each of those has an obvious way to prove it false, and tasting it once yourself is the example that passes while the dish is still broken on a busy Friday.' },
+  ],
+  related: ['isa', 'hooks', 'telos', 'cortex', 'observability'],
+  without: 'Without this: done means whatever the model says it means, and you find out which claims were guesses when something breaks in front of a customer.',
+  failure: 'You notice it is broken when the phrase "should work" survives into a final answer, or when a run ends with claims closed that no tool output in the transcript actually supports.',
+};

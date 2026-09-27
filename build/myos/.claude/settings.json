@@ -1,0 +1,35 @@
+{
+  "_header": [
+    "═══ WHY THIS FILE EXISTS ════════════════════════════════════════",
+    "A hook that is not registered is just a file on disk. This is the wiring",
+    "that turns guard.ts from text into a rule with teeth.",
+    "═══ HOW IT WORKS ═════════════════════════════════════════════════",
+    "The harness reads this file when a session starts. hooks.PreToolUse is a",
+    "list of matchers; matcher 'Write|Edit' is a regex over tool names, so the",
+    "command below runs before either of those tools acts. The command gets the",
+    "pending call as JSON on stdin; exit 2 cancels it. Nothing here executes on",
+    "its own — it only says what runs, and when.",
+    "═══ WHAT BREAKS WITHOUT IT ═══════════════════════════════════════",
+    "The hook never runs and no error is printed. The system looks guarded and",
+    "is not, which is worse than being visibly unguarded.",
+    "═══ MIRROR ═══════════════════════════════════════════════════════",
+    "LifeOS: ~/.claude/settings.json   RS.GE: apps/agent/src/index.ts — the",
+    "product wires its own pieces in code it owns; a personal system asks the",
+    "harness to do the wiring and lives with the harness's rules.",
+    "(Header lives in a data key because strict JSON has no comments; the",
+    "harness ignores keys it does not know.)"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun .claude/hooks/guard.ts"
+          }
+        ]
+      }
+    ]
+  }
+}

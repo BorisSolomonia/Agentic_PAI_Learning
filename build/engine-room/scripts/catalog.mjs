@@ -1,0 +1,13 @@
+import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { resolve, relative, join } from 'node:path';
+const root=resolve('../lifeos-reference/LifeOS/install');
+const walk=(dir)=>readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(join(dir,e.name)):[relative(root,join(dir,e.name)).replaceAll('\\','/')]);
+const files=walk(root).sort();
+const hooks=JSON.parse(readFileSync(join(root,'hooks/hooks.json'),'utf8')).hooks;
+const events=Object.entries(hooks).map(([event,buckets])=>({event,entries:buckets.flatMap(b=>b.hooks.map(h=>({matcher:b.matcher||'all',command:h.command||h.url,async:!!h.async})))}));
+const skillFiles=files.filter(p=>/^skills\/[^/]+\/SKILL\.md$/.test(p));
+const skills=skillFiles.map(path=>{const text=readFileSync(join(root,path),'utf8');return {name:path.split('/')[1],path,description:(text.match(/^description:\s*(.*)$/m)?.[1]||'Open the source instructions for this capability.').replace(/^['"]|['"]$/g,'')};});
+const starterFiles=['CLAUDE.md','SYSTEM_PROMPT.md','USER/IDENTITY.md','USER/TELOS.md'];
+if(!starterFiles.every(p=>existsSync(resolve('../myos',p))))throw new Error('Starter snapshot changed: inspect and update the local lesson.');
+writeFileSync('app/catalog.json',JSON.stringify({files,events,skills,starterFiles},null,2)+'\n');
+console.log(`Cataloged ${files.length} payload files, ${skills.length} skills, ${events.length} hook events. No personal file contents copied.`);

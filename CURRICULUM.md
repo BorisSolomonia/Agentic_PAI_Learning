@@ -1,0 +1,441 @@
+# Curriculum — Build a LifeOS-class AI system
+
+**Owner:** Boris · **Rewritten:** 2026-08-30 (v3.0, rookie-pass edition) · **Target version:** LifeOS 7.40.4
+**Goal:** `{ Phase 1 — build the same class of system as fast as possible, using AI wherever possible; Phase 2 — go deep. }`
+
+---
+
+## How to read the sources in this file
+
+Every step names **exactly how much of a source to consume**. This is deliberate: the usual failure of a curriculum is sending you to a 4,000-word article when 600 words are relevant.
+
+| Marker | Means |
+|---|---|
+| ✅ **verified** | I fetched the page and read the real headings. The range is accurate. |
+| ⚠️ **range unverified** | I could not open it to check. Treat the guidance as a hint, not a promise. |
+| **whole thing** | Short enough that all of it is relevant. Said explicitly so you know it isn't laziness. |
+
+**Why there are no YouTube timestamps.** I tried to pull real transcripts so I could give you exact minute ranges. YouTube blocks transcript fetching from this machine, and the video pages don't expose chapter markers to me either. Rather than invent plausible-looking timestamps that send you to the wrong minute, I dropped video from the core path and rebuilt it on text sources whose sections I could actually verify. If you want video, buy one of the courses below and use it *instead of* the reading in Steps 8–16, not in addition.
+
+If a range ever sends you to the wrong place, tell me and I re-verify it.
+
+---
+
+## 0. Hours
+
+| Phase | Steps | Hours | at 10 h/week |
+|---|---|---|---|
+| **Phase 1 — BUILD** | 24 steps | **59 h** | 6 weeks |
+| **Phase 2 — DEPTH** | 8 stages | **92 h** | 10 weeks |
+| **Total** | | **151 h** | 16 weeks |
+
+*Phase 1 dropped from 78 h to 59 h: you already installed, repaired and verified LifeOS 7.40.4 in practice, which was most of the old Week 1 and part of the capstone. The 59 is the sum of the 24 step budgets below; Step 24 will run over, so treat it as a floor.*
+
+**The daily loop, 2 hours:** 20 min source (the exact range, nothing more) → 70 min build → 15 min run the proof command → 15 min log it in `PROGRESS.md`.
+
+**Two rules:** no day without a file on disk, and no file without a command that proves it works.
+
+---
+
+## Is there a course that teaches this? I looked. No.
+
+**Nothing teaches LifeOS itself.** No course, cohort or paid community covers the architecture, and Daniel Miessler doesn't sell one. The repo and the install on your machine are the only teaching material that exists for it.
+
+**What does exist** are courses on the *substrate*: Claude Code's extension points, which is Steps 4–16 here. They stop short of the architecture layer (ISA, Cortex, the four zones, the split constitution), which is the part that makes it a system rather than a pile of config.
+
+| Course | Covers | Verdict |
+|---|---|---|
+| [Claude Code 2026: Subagents, MCP, Skills and Plugins Bootcamp](https://www.udemy.com/course/claude-code-for-agentic-ai-build-ai-agents-10x-faster/) | subagents, MCP, skills, plugins, hooks, slash commands | Closest match to Steps 4–16 |
+| [Claude Code: AI Agents, MCP, Hooks & Plugins [2026]](https://www.udemy.com/course/claude-code-ai-coding-agents-automation/) | same ground, different order | Alternative |
+| [Mastering Claude Code & AI Agents [2026]](https://www.udemy.com/course/master-claude-code/) | Claude Code plus the OpenAI Agents SDK | Useful for Phase 2 D2 |
+
+**My recommendation: skip them.** They teach in twenty hours what Steps 4–16 teach in twenty hours, except these steps build *your* system while you learn instead of a throwaway demo. Buy one only if you strongly prefer watching to doing.
+
+---
+
+# PHASE 1 — BUILD
+
+Builds live in `build/myos/`, tested from a scratch folder. Your live `~/.claude` is production for six client projects. Do not build there.
+
+---
+
+## PART A — Understand what you already own (Steps 1–3, 5 h)
+
+You installed LifeOS 7.40.4 yesterday. Before building your own, read the one on your disk.
+
+### Step 1 — The five extension points (2 h)
+
+**What.** Everything in LifeOS is built from five things Claude Code gives you: context files, skills, hooks, subagents, MCP. Nothing else. Once you see that, the 23 "components" stop looking like magic.
+
+**Do.** Write `build/notes/01-five-surfaces.md`: one paragraph per extension point, and for each, name one LifeOS component built on it.
+
+**Source** — 📄 <https://code.claude.com/docs/en/memory>
+✅ **verified.** Read only the section **"## CLAUDE.md vs auto memory"** — one table plus three paragraphs. **Stop at "## CLAUDE.md files".** That table is the whole idea: what you write versus what the assistant writes. You return to this page at Steps 4, 5 and 20.
+
+**Proof.** Name all five from memory, and for each say which LifeOS component uses it.
+
+**Gives you.** The map nobody publishes. From here on, any AI system you meet decomposes into five parts instead of looking like magic. **Where you use it:** first hour on any client system, deciding what is buildable and what is fantasy.
+
+---
+
+### Step 2 — The four zones (1.5 h)
+
+**What.** LifeOS sorts every file into SYSTEM (ships, gets overwritten by updates), USER (yours, never touched), INTERFACE (the contract between them), RUNTIME (throwaway). This is the most important idea for building these for clients, and it's why yesterday's update didn't destroy your data.
+
+**Do.** Take twenty real paths from your own install and classify each. Write `build/notes/02-zones.md`.
+
+**Source** — 📄 `~/.claude/LIFEOS/DOCUMENTATION/SystemUserBoundary.md`
+✅ **verified.** Read from **"## The four zones"** to the end of **"## The four allowed access patterns"** — about 40% of the file. Skip the "Why this document exists" preamble and everything after the access patterns.
+
+**Proof.** 18 of 20 paths classified correctly against the doc's own tables.
+
+**Gives you.** The rule that makes a system survivable. **Where you use it:** every client install you ever ship, because it's the difference between an upgrade that keeps their data and one that eats it. This is the single most commercially valuable idea in Phase 1.
+
+---
+
+### Step 3 — The split constitution (1.5 h)
+
+**What.** `CLAUDE.md` is only a routing table. The rules live in a separate file loaded with `--append-system-prompt-file` by a launcher alias. This is why plain `claude` behaves differently from `lifeos` on your machine.
+
+**Do.** Read your two files side by side. Write `build/notes/03-constitution.md`: what's in the routing table, what's in the constitution, why the split exists.
+
+**Sources** — 📄 your own `~/.claude/CLAUDE.md` — **whole thing**, 104 lines.
+📄 `~/.claude/LIFEOS/LIFEOS_SYSTEM_PROMPT.md` — read **"## Output Format"** and **"## Verification"** only. The rest is reference you return to later.
+
+**Proof.** Run `claude -p "quote a rule that exists only in the system prompt"` twice, once plain and once with `--append-system-prompt-file`. Different answers.
+
+**Gives you.** Control over what the model treats as non-negotiable versus merely suggested. **Where you use it:** when a client says "it keeps ignoring our rule", this is why, and the fix.
+
+---
+
+## PART B — Context (Steps 4–7, 9 h)
+
+### Step 4 — Your own CLAUDE.md (2 h)
+
+**Do.** Create `build/myos/CLAUDE.md`. Routing only: where things live. No rules yet.
+
+**Source** — 📄 <https://code.claude.com/docs/en/memory>
+✅ **verified.** Read **"### Write effective instructions"** — four labelled paragraphs (Size, Structure, Specificity, Consistency), about 300 words. The 200-line ceiling stated there is the number that matters.
+
+**Proof.** `/memory` in a session in that folder lists your file.
+
+**Gives you.** A context file that stays under the size where adherence collapses. **Where you use it:** every project repo you own, starting with 9T ERP.
+
+---
+
+### Step 5 — Identity files and `@`-imports (2 h)
+
+**Do.** Write `USER/IDENTITY.md` and `USER/PROJECTS.md`, import both from CLAUDE.md.
+
+**Source** — 📄 <https://code.claude.com/docs/en/memory>
+✅ **verified.** Read **"### Import additional files"** only, about 400 words. The gotcha worth catching: imports load at launch, so they cost context even when unused.
+
+**Proof.** A fresh session answers "what am I working on?" correctly.
+
+**Gives you.** Identity that loads once and never gets re-explained. **Where you use it:** the moment a system serves more than one person or more than one project.
+
+---
+
+### Step 6 — The INTERFACE zone (2 h)
+
+**What.** Where standing rules go so no update can wipe them. Yesterday I moved `NOTHING IS HARDCODED` into exactly this zone on your live system.
+
+**Do.** Create `USER/CONFIG/OPERATIONAL_RULES.md`, import it, put three real rules in it.
+
+**Source** — 📄 your own `~/.config/LIFEOS/USER/CONFIG/OPERATIONAL_RULES.md`
+✅ **verified.** Read the section **"# Standing rules — migrated from the PAI tree"** to the end. That's your own writing. It's the shape to copy.
+
+**Proof.** Overwrite `build/myos/CLAUDE.md` from a blank template. The rules survive.
+
+**Gives you.** A place for rules that updates cannot reach. **Where you use it:** anywhere you hand a system to someone who will later update it, which is every client.
+
+---
+
+### Step 7 — TELOS (3 h)
+
+**Do.** Run `/Interview` on your live system first, then write the equivalent for `myos` by hand so you understand the shape.
+
+**Source** — 📄 `~/.claude/skills/Interview/SKILL.md`
+✅ **verified.** Read **"## Quick Reference"** and **"## Gotchas"** only. Six bullets. The rest is workflow routing you don't need.
+
+**Proof.** A fresh session recommends a next action citing your TELOS.
+
+**🚦 GATE A.** Five questions you never answer twice, answered 5/5 with zero prompting, and the constitution demonstrably loads only via your launcher.
+
+**Gives you.** The thing that turns generic advice into advice about your actual goals. **Where you use it:** on yourself, and as the first hour of every client engagement.
+
+---
+
+## PART C — Skills (Steps 8–11, 9 h)
+
+### Step 8 — Anatomy of a skill (2 h)
+
+**What.** A folder with a `SKILL.md`. Frontmatter carries a name and a description, and the description is the entire trigger.
+
+**Do.** Build `skills/Standup/SKILL.md`. Pure prompt, no code.
+
+**Source** — 📄 <https://code.claude.com/docs/en/skills>
+✅ **verified.** Read **"## Getting started"** through **"### Frontmatter reference"** — three subsections. **Stop before "### Add supporting files".** Skip "## Bundled skills" at the top entirely: that's about shipped skills, not writing one.
+
+**Proof.** `/standup` runs it.
+
+**Gives you.** The unit of reusable capability. **Where you use it:** every recurring task you currently re-explain, such as the 9T month-close or the BachmannLogi margin run.
+
+---
+
+### Step 9 — Progressive disclosure (2 h)
+
+**What.** Only names and descriptions are pre-loaded, so the description is all the model sees when deciding whether your skill is relevant. That's why it's the whole game.
+
+**Do.** Rewrite your description as USE WHEN / NOT FOR. Test ten phrasings, log which fired.
+
+**Source** — 📰 [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+✅ **verified.** 2,200 words total. Read **"The anatomy of a skill"** and **"Skills and the context window"** only — the second explains progressive disclosure. Skip "Skills and code execution" (you read it next step), "Security considerations", "The future of Skills", "Acknowledgements".
+
+**Proof.** 8 of 10 intended phrasings fire; 0 of the NOT-FOR list fires.
+
+**Gives you.** The skill that fires without being called. **Where you use it:** this is the difference between a skill library people use and one they forget exists.
+
+---
+
+### Step 10 — A skill with code (2 h)
+
+**Do.** Build `skills/Reconcile/` with `SKILL.md` plus a `tools/check.ts` the skill calls.
+
+**Sources** — 📰 Same article as Step 9, now the **"Skills and code execution"** section only, about 300 words.
+📄 <https://code.claude.com/docs/en/skills> ✅ **verified** — **"### Add supporting files"** and **"### Pre-approve tools for a skill"**. Two short subsections.
+
+**Proof.** The script's output appears in the transcript.
+
+**Gives you.** Skills that do real work instead of just instructing. **Where you use it:** reconciliation, imports, anything where a script must run and its output must be seen.
+
+---
+
+### Step 11 — Steal from real skills (3 h)
+
+**Do.** Read three skills already on your machine, write down five patterns you're adopting, each with its source file.
+
+**Source** — 📁 `~/.claude/skills/ISA/SKILL.md`, `skills/CreateSkill/SKILL.md`, `skills/Telos/SKILL.md`
+Read the **frontmatter and first two H2 sections** of each. Not the workflows: those are long and specific to their domain.
+
+**🚦 GATE B.** A sentence in your own words, never naming the skill, loads it. Three phrasings, three hits.
+
+**Gives you.** Other people's hard-won structure, for free. **Where you use it:** every skill you write after this one is better because of this afternoon.
+
+---
+
+## PART D — Hooks (Steps 12–15, 12 h)
+
+The highest-value part of Phase 1. Hooks are why rules hold when the model forgets.
+
+### Step 12 — Your first hook (3 h)
+
+**What.** A shell command Claude Code runs at a fixed moment. Deterministic: it fires whether or not the model feels like it.
+
+**Do.** `hooks/Hello.hook.ts` on SessionStart, printing a banner.
+
+**Source** — 📄 <https://code.claude.com/docs/en/hooks-guide>
+✅ **verified.** Read **"## Set up your first hook"** — a numbered walkthrough, one screen. Then stop. **Do not read "## What you can automate" yet**: seven recipes, and you need one today.
+
+**Proof.** Your banner prints on every new session.
+
+**Gives you.** Behaviour that happens whether or not the model cooperates. **Where you use it:** the first time a client says "it must always do X", and prompting isn't enough.
+
+---
+
+### Step 13 — Context injection (3 h)
+
+**Do.** `hooks/LoadContext.hook.ts` on UserPromptSubmit, injecting text the model must see.
+
+**Source** — 📄 <https://code.claude.com/docs/en/hooks-guide>
+✅ **verified.** Read **"### Read input and return output"** and **"### Filter hooks with matchers"** — two subsections inside "## How hooks work". Skip the rest of that section.
+
+**Proof.** Ask "what did you just receive?" and your injected block is quoted back.
+
+**Gives you.** The ability to put information in front of the model at exactly the right moment. **Where you use it:** injecting live project state, open issues, or yesterday's numbers.
+
+---
+
+### Step 14 — Blocking (3 h)
+
+**What.** Exit code 2 blocks the action. This is the line between advice and enforcement.
+
+**Do.** `hooks/Guard.hook.ts` on PreToolUse, refusing writes to a protected path.
+
+**Source** — 📄 <https://code.claude.com/docs/en/hooks-guide>
+✅ **verified.** Read **"### Block edits to protected files"** — a complete worked example, half a screen. Then **"### Hooks and permission modes"** under Limitations, which tells you when a hook is bypassed. Nothing else.
+
+**Proof.** Try the forbidden thing three different ways. Blocked three times.
+
+**Gives you.** Enforcement. **Where you use it:** your Flyway rule, your never-commit rule, your don't-touch-production rule. Every one of them becomes code instead of hope.
+
+---
+
+### Step 15 — Read four real hooks (3 h)
+
+**Do.** Compare yours against four on your machine. Apply five improvements.
+
+**Source** — 📁 `~/.claude/hooks/` → `LoadMemory.hook.ts`, `VerificationGate.hook.ts`, `PreToolGuard.hook.ts`, `MemoryDeltaSurface.hook.ts`
+Read the **header comment block** of each (the `/** … */` at the top) plus the **main exported function**. Skip the helpers. The header comments state the contract, and that's the part worth copying.
+
+**🚦 GATE C.** Forbidden action blocked three ways, and all three attempts appear in your event log.
+
+**Gives you.** The gap between your first attempt and production quality, closed by reading rather than by failing. **Where you use it:** immediately, on the four hooks you just wrote.
+
+---
+
+## PART E — Agents and the ISA (Steps 16–19, 12 h)
+
+### Step 16 — Subagents (3 h)
+
+**Do.** Write two agent files, run three in parallel, time it against serial.
+
+**Source** — 📄 <https://code.claude.com/docs/en/sub-agents>
+✅ **verified.** This page is enormous, 40+ headings. Read only three targeted sections: **"## Quickstart: create your first subagent"**, then **"### Write subagent files"** with its **"#### Supported frontmatter fields"**, then **"### Choose between subagents and main conversation"**. Skip MCP scoping, forks, persistent memory, concurrency limits: all Phase 2.
+
+**Proof.** Parallel wall-clock beats the serial sum.
+
+**Gives you.** Parallelism, and the judgement to know when it's wasted. **Where you use it:** research sweeps, multi-file audits, and the parallel-agent work you already do on 9T.
+
+---
+
+### Step 17 — The ISA (3 h)
+
+**What.** LifeOS's core artifact. Every claim names the probe that would prove it false. No effort tiers, no phases: both were deleted in 8.x.
+
+**Do.** Write `build/myos/ISA-TEMPLATE.md`.
+
+**Source** — 📄 `~/.claude/LIFEOS/ALGORITHM/v8.20.2.md`
+Read from **"## The Loop"** through **claim 9** of "## A run is complete when". That's the conceptual core. Claims 10–16 and the whole "## Spend" section are Phase 2. ⚠️ Dense; expect to read it twice.
+
+**Proof.** Every claim row in your template has a probe column, and there is no tier or phase field anywhere.
+
+**Gives you.** A definition of done that cannot quietly drift. **Where you use it:** every spec you write for yourself or a client, replacing the checkbox lists that let things slip through.
+
+---
+
+### Step 18 — Evidence rules (3 h)
+
+**Do.** Write `RULES/Verification.md` covering at least eight evidence types.
+
+**Source** — 📄 `~/.claude/LIFEOS/RULES/Verification.md`
+✅ **verified.** 50 lines, **whole thing**. Note while reading that rules 6 and 7 are printed out of order in the file.
+
+**Proof.** Your table covers eight modalities, each with a real command.
+
+**Gives you.** The habit that makes "it works" mean something. **Where you use it:** everywhere. This is the rule your golden-baseline diffs were already reaching for.
+
+---
+
+### Step 19 — The verification gate (3 h)
+
+**Do.** `hooks/VerificationGate.hook.ts`, refusing to mark a claim done without evidence in the same turn.
+
+**🚦 GATE D.** Run a real task against an ISA containing one claim you know will fail. The gate catches it, not you.
+
+**Gives you.** A gate that catches your own false claims before you act on them. **Where you use it:** financial work, where a wrong number that looks right is the expensive failure mode.
+
+---
+
+## PART F — Memory (Steps 20–22, 9 h)
+
+### Step 20 — Memory shapes (3 h)
+
+**What.** Three tiers: hot facts always loaded, a typed knowledge graph read on demand, episodic work history.
+
+**Do.** Design yours on paper before writing any code.
+
+**Sources** — 📄 <https://code.claude.com/docs/en/memory>
+✅ **verified.** Now read **"## Auto memory"** through **"### How it works"**. The 200-line / 25 KB index limit stated there is the constraint that shapes every design decision in this part.
+📰 [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+✅ **verified.** 4,200 words. Read **"The anatomy of effective context"** and **"Structured note-taking"** only. Compaction and sub-agent architectures wait for Phase 2 D4.
+
+**Proof.** Three tiers named, each with a write rule, a read rule and a size cap.
+
+**Gives you.** A memory design that stays useful past a hundred sessions instead of drowning. **Where you use it:** the first system you build that someone uses daily.
+
+---
+
+### Step 21 — Capture and recall (3 h)
+
+**Do.** `hooks/MemoryWrite.hook.ts` and `hooks/MemoryRecall.hook.ts`, with injection capped at 2 KB.
+
+**Proof.** A fact from session A is used unprompted in session B.
+
+**Gives you.** A system that gets smarter across sessions instead of resetting. **Where you use it:** the feature clients notice first and value most.
+
+---
+
+### Step 22 — Curation (3 h)
+
+**What.** Memory that only grows is memory that stops working. Dedupe, supersede, delete.
+
+**Do.** `MEMORY/POLICY.md` plus `tools/curate.ts`.
+
+**Source** — 📄 `~/.claude/LIFEOS/TOOLS/CortexHealth.ts`
+Read the validator functions near the top, roughly **lines 35–80**. They define in code what "valid memory evidence" means. The fail-closed style is the pattern worth copying.
+
+**🚦 GATE E.** Monday's fact, used unprompted on Friday.
+
+**Gives you.** Memory that stays sharp instead of just growing. **Where you use it:** month three of any deployment, which is when unmanaged memory starts hurting.
+
+---
+
+## PART G — Make it visible, then ship it (Steps 23–24, 6 h)
+
+### Step 23 — Dashboard and voice (3 h)
+
+**Do.** A Bun HTTP server with one notify endpoint, a Stop hook that calls it, and a page reading your event log.
+
+**Source** — 📄 `~/.claude/LIFEOS/PULSE/pulse.ts`
+Read the **top-of-file comment block and the route table**. Skip the subsystem implementations. You want the shape, not the features.
+
+**Proof.** A non-technical person watches your dashboard and can say what the system is doing.
+
+**Gives you.** Proof the system is working, visible to someone who isn't you. **Where you use it:** the client demo, and your own debugging.
+
+---
+
+### Step 24 — Capstone: ship it for 9T ERP (3 h + carry-over)
+
+**Do.** `ORG_TELOS.md` from interviewing the business. Three domain skills: source-file reconciliation, debtor review, month-close. Two guard hooks: never edit an applied Flyway migration, never commit. An installer that is dry-run by default and needs `--apply`. A README a rookie can follow.
+
+**Source** — 📁 `~/.claude/skills/LifeOS/INSTALL.md`
+✅ **verified.** Read **"## Rules you must follow"** — five bullets, and they are the entire philosophy of a safe installer. Then skim `Tools/OverlaySystem.ts` **lines 20–40** (the header comment) for the dry-run contract.
+
+**🚦 GATE F.** Someone else installs it and completes one real task from the README alone.
+
+**Gives you.** A system someone else can install and use without you in the room. **Where you use it:** this is the deliverable you sell. Everything before it was practice.
+
+---
+
+### Phase 1 exit — all five
+
+1. Cold-start test passes on your system and on the 9T one.
+2. A forbidden action is blocked by code, three ways.
+3. A false claim is caught by your gate, not by you.
+4. A fact from session A is used in session B.
+5. Someone else installed it and completed a task.
+
+---
+
+# PHASE 2 — DEPTH (92 h)
+
+You review, Claude writes. You still don't author from a blank file, but you must be able to judge what comes back.
+
+| # | Stage | h | Gate |
+|---|---|---|---|
+| D1 | TypeScript + Bun — read and verify, not author | 8 | Given 3 hooks, one subtly wrong, find it without running it |
+| D2 | Claude Agent SDK — headless agents | 12 | A scheduled agent runs with `maxTurns` and a budget cap |
+| D3 | MCP — build a server | 12 | Your own server exposing 3 tools against the 9T database |
+| D4 | Context engineering at scale | 12 | Same task at 10 k and 150 k context, quality delta measured |
+| D5 | Evals — pass@k / pass^k | 12 | A suite that fails when you regress a skill's trigger |
+| D6 | Security — injection, permissions, egress | 12 | Red-team your own system, every finding closed |
+| D7 | Execution layer — actions, pipelines, flows | 12 | A nightly flow that runs, verifies itself, reports |
+| D8 | Productisation — install, upgrade, roll back | 12 | v1→v2 upgrade on a live install, zero user-data loss |
+
+---
+
+## Curriculum maintenance
+
+Tell me a step took longer, a source was padded, or a range sent you to the wrong place, and I rebalance and re-verify. Every change is logged in `PROGRESS.md` §6 with its reason.

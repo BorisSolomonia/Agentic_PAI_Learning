@@ -1,0 +1,443 @@
+# Build Your Own LifeOS — the chapter book
+
+**What you are building:** your own personal Life OS, from an empty folder to a system someone
+else could install. Not notes about one. A working thing you use.
+
+**How it works.** One chapter = one hour = one working piece. You direct, I write the code, you
+run a command that proves it works. If the check fails, the chapter isn't done.
+
+**Where it lives:** `C:\Users\Boris\Dell\stuff\Docs\Learning\AI\PAI\build\myos\`
+Your real `~/.claude` is production for six client projects. We never touch it.
+
+**Every chapter has the same six parts:**
+
+| Part | What it does |
+|---|---|
+| **Why** | What this piece is for, in plain language, before any command |
+| **Where you are** | What exists on disk right now, at the start of this hour |
+| **Where you'll be** | What exists at the end |
+| **Sources** | Only when needed, and always with the exact range to read. `✅ verified` means I opened the page and read its real headings |
+| **Do** | Numbered. The prompt to send me, then the command you run yourself |
+| **Proof / Learned** | The command whose output decides if the chapter passed, and what it bought you |
+
+**On sources.** Most chapters need none: you learn by doing and I explain as we go. Where a
+source genuinely helps, you get the section to read and what to skip. **No YouTube links appear
+in this book.** I cannot fetch transcripts or chapter markers from this machine, so I cannot
+verify a single timestamp, and a guessed one sends you to the wrong minute.
+
+---
+
+# The whole arc
+
+| Part | Chapters | Hours | You end up with |
+|---|---|---|---|
+| **1. A system that knows you** | 1–6 | 6 | A session that knows who you are and what you're working toward |
+| **2. A system that acts** | 7–13 | 7 | Skills that fire on plain sentences, one of them running real code |
+| **3. A system that enforces** | 14–20 | 7 | Rules that hold whether or not the model cooperates |
+| **4. A system that remembers** | 21–26 | 6 | Facts learned Monday, used Friday, without you repeating them |
+| **5. A system that verifies** | 27–32 | 6 | Claims that cannot close without evidence |
+| **6. A system you can see** | 33–37 | 5 | A dashboard, a voice, a health check |
+| **7. A system you can give away** | 38–42 | 5 | An installer, an update path, a README |
+| | **42** | **42 h** | |
+
+At 5 hours a week that's 8 weeks. At 10, it's 4.
+
+---
+
+## Chapter index
+
+**Part 1 — A system that knows you**
+1. Make an empty folder into a system that loads
+2. Teach it who you are
+3. Write your TELOS: what you're actually trying to do
+4. Split the constitution from the routing table
+5. Put your rules where updates can't reach them
+6. **Checkpoint:** the cold-start test
+
+**Part 2 — A system that acts**
+7. Your first skill, in one file
+8. Make it fire without being named
+9. A skill that runs real code
+10. A skill that reads your own project data
+11. One skill calling another
+12. Slash commands versus automatic triggers
+13. **Checkpoint:** three sentences, three hits
+
+**Part 3 — A system that enforces**
+14. Your first hook: a banner at session start
+15. Inject fresh context on every prompt
+16. Block something. Exit code 2
+17. Log every tool call to a file
+18. Speak when the work is done
+19. Read four production hooks, improve yours
+20. **Checkpoint:** the wall
+
+**Part 4 — A system that remembers**
+21. Design the memory tiers on paper
+22. Write a memory when the turn ends
+23. Recall the right memory when the turn starts
+24. Curate: dedupe, supersede, delete
+25. Knowledge notes with typed links
+26. **Checkpoint:** Monday to Friday
+
+**Part 5 — A system that verifies**
+27. The ISA: writing down what "done" means
+28. Evidence rules: what counts as proof
+29. A gate that refuses an unproven claim
+30. Class-sweep: fix one, find the rest
+31. Ask-fidelity: nothing quietly dropped
+32. **Checkpoint:** the honest run
+
+**Part 6 — A system you can see**
+33. An event log worth reading
+34. A notification server
+35. A dashboard page
+36. Your own statusline
+37. A doctor that degrades loudly
+
+**Part 7 — A system you can give away**
+38. Split your own tree into SYSTEM and USER
+39. An installer that is dry-run by default
+40. An update path that never eats user data
+41. A README a rookie can follow
+42. **Final:** someone else installs it and uses it
+
+Chapters 1–6 are written in full below. I'll write each following part as you reach it, so it
+can absorb what actually happened in the part before rather than being guesswork written weeks
+early.
+
+---
+---
+
+# PART 1 — A SYSTEM THAT KNOWS YOU
+
+---
+
+## Chapter 1 — Make an empty folder into a system that loads
+
+**Why.** Every AI system in this book, LifeOS included, starts as one markdown file that the
+assistant reads before you type anything. Get that file loading and everything else has
+somewhere to attach. Get it wrong and every later chapter fails quietly, because your rules
+will be sitting in a file nobody reads.
+
+**Where you are.** Nothing exists. `build/myos/` is not there yet.
+
+**Where you'll be.** A folder that, when you start a session inside it, loads your file. You
+will have *seen* it load, not assumed it.
+
+**Sources.** None. This chapter is 100% doing.
+
+### Do
+
+**1. Make the folder.** In your Ubuntu terminal:
+```bash
+mkdir -p /mnt/c/Users/Boris/Dell/stuff/Docs/Learning/AI/PAI/build/myos
+cd /mnt/c/Users/Boris/Dell/stuff/Docs/Learning/AI/PAI/build/myos
+```
+
+**2. Start a session in it.** Type `claude` and press enter. You are now in a session whose
+working folder is `myos`, not `~/.claude`. This matters: files are found relative to where you
+started.
+
+**3. Send me this prompt, exactly:**
+
+> Create `CLAUDE.md` in this folder. It should be a routing table, not a rulebook: a title, one
+> sentence saying this is Boris's personal Life OS, and a short list of where things will live
+> (`USER/` for identity, `skills/` for capabilities, `hooks/` for enforcement). Keep it under 30
+> lines. Do not add rules yet.
+
+**4. Read what I wrote** before doing anything else. `cat CLAUDE.md`. If you don't understand a
+line, ask. A file you can't read is a file you can't debug in chapter 20.
+
+### Proof
+
+Still in that session, type:
+```
+/context
+```
+Look for a **Memory files** section listing your `CLAUDE.md`. If it isn't there, the file is in
+the wrong place or the session was started from the wrong folder.
+
+Second proof, the one that actually matters. **Quit the session** (`Ctrl-D`), start a fresh one
+in the same folder, and ask:
+
+> What is this project and where do skills go in it?
+
+It should answer from your file without you pasting anything. That is the whole point: the file
+is loaded before you speak.
+
+### Learned
+
+A context file is not configuration, it's a message delivered to the assistant before your
+first word. **Where you use it:** every repo you own. A `CLAUDE.md` in `9T_erp` is why I'd stop
+asking you where the migrations live.
+
+---
+
+## Chapter 2 — Teach it who you are
+
+**Why.** Right now your system knows about a *project*. It doesn't know about *you*. Identity
+is what turns generic advice into advice for a Georgian ERP builder with eight live projects.
+We put it in a separate file rather than in `CLAUDE.md`, because identity changes on a different
+clock than project layout, and because in Part 7 identity is the part that must survive updates.
+
+> **"But I'm building this for other people. Why would they want my details?"**
+> They wouldn't, and they never get them. What ships is the **empty slot and the interview that
+> fills it**, never your answers. Check the real thing: `skills/LifeOS/install/USER/PRINCIPAL/PRINCIPAL_IDENTITY.md`
+> in the public LifeOS release reads `Name: User`, `Location: (interview)`, and **no file in the
+> shipped USER template contains the word "Boris" or "Daniel"**. Daniel built his own identity
+> file, then released the shape of it.
+> You are building three separate things in this chapter, and only the first two ship:
+> **(1)** the `@`-import line in `CLAUDE.md`, which is the mechanism · **(2)** a template with
+> the right questions in it · **(3)** *your* answers, which stay in the USER zone and are never
+> distributed. Chapter 5 is where that boundary gets enforced in code. And you are also the
+> first user: a slot that doesn't work for you works for nobody.
+
+**Where you are.** `build/myos/CLAUDE.md` exists and loads.
+
+**Where you'll be.** A second file, `USER/IDENTITY.md`, pulled into every session automatically
+by a one-line reference from `CLAUDE.md`.
+
+**Sources.**
+📄 <https://code.claude.com/docs/en/memory> — ✅ **verified.** Read the section
+**"### Import additional files"** only, about 400 words. Skip everything above and below it.
+The one thing to notice: an imported file loads at launch, so it costs you context on every
+single session whether you use it or not. That's why identity is short and reference material
+isn't imported.
+
+### Do
+
+**1. Send me this:**
+
+> Create `USER/IDENTITY.md`. Cover: who I am professionally, where I am, my eight active
+> projects with one line each, how I like to work, and what I'm not. Ask me questions where you
+> don't know the answer instead of inventing it. Then add the `@`-import line to `CLAUDE.md`.
+
+**2. Answer my questions honestly.** This is the chapter's real work. Vague input here produces
+a system that gives vague advice for the next 40 chapters.
+
+**3. Check the import line yourself:**
+```bash
+grep '@' CLAUDE.md
+```
+You should see something like `@USER/IDENTITY.md`. One line. That line is the entire mechanism.
+
+### Proof
+
+New session in the folder. Ask three things you never explained in it:
+
+> Which of my projects uses Flyway? What timezone am I in? What do I mean when I say "the ERP"?
+
+Three correct answers, zero prompting, is a pass. One wrong answer means the file is missing a
+fact, which is information, not failure.
+
+### Learned
+
+Identity is a file, and `@` is how a file becomes context. **Where you use it:** the first hour
+of any client engagement. Their people, their systems, their vocabulary, in one file that every
+session reads.
+
+---
+
+## Chapter 3 — Write your TELOS: what you're actually trying to do
+
+**Why.** Identity says who you are. TELOS says where you're going: mission, goals, the problems
+you're solving, the strategies you've chosen. It exists so the system can judge a suggestion.
+Without it, "should I build X?" gets a generic answer. With it, the answer is measured against
+your actual net-worth-by-40 goal and your eight-projects-is-too-many problem. **This is the file
+that makes it a Life OS instead of a config folder.**
+
+**Where you are.** The system knows who you are.
+
+**Where you'll be.** It knows what you want, and can say whether a given piece of work serves it.
+
+**Sources.**
+📄 `~/.claude/LIFEOS/USER/TELOS/TELOS.md` on your own machine — the one you filled in with
+`/Interview`. **Whole file, it's short.** Read it as a shape to copy, not to copy verbatim.
+📄 `~/.claude/skills/Interview/SKILL.md` — ✅ **verified.** Read **"## Quick Reference"** and
+**"## Gotchas"** only, six bullets. Skip the workflow-routing sections.
+
+### Do
+
+**1. Send me this:**
+
+> write `USER/TELOS.md` based on knowledge you have about me. Sections: Mission, Goals with dates, Problems I'm
+> solving, Strategies I've committed to, and Challenges. Don't write "grow the business" as a goal.
+
+**2. Expect this to take most of the hour.** It is the only chapter where thinking outweighs
+typing. Being pushed on a woolly goal is the point, not friction.
+
+**3. Import it:** add `@USER/TELOS.md` to `CLAUDE.md`, same as chapter 2.
+
+### Proof
+
+New session. Ask something with no right answer:
+
+> I have a free Saturday. Should I work on the geo-lander redesign or the 9T cash-flow forecast?
+
+A pass is an answer that **cites your TELOS** — naming a goal or a problem by its own words. A
+fail is a balanced list of pros and cons, which is what a system with no TELOS produces.
+
+### Learned
+
+Intent, written down once, applied to every future question. **Where you use it:** this is the
+thing clients cannot buy anywhere else. Any tool can write code; a system that knows what the
+business is *for* can tell them which code not to write.
+
+---
+
+## Chapter 4 — Split the constitution from the routing table
+
+**Why.** `CLAUDE.md` is read as a message: helpful, but the assistant can weigh it against other
+things and occasionally lose. A **system prompt** sits at a higher level. LifeOS puts its
+non-negotiables there and keeps `CLAUDE.md` as a map of where things live. That split is why on
+your machine plain `claude` and `lifeos` behave differently. You're going to build the same
+split, because from chapter 16 you'll have rules that must not be negotiable.
+
+**Where you are.** One file holding everything, loaded as context.
+
+**Where you'll be.** Two files and a launcher command, `myos`, that loads both.
+
+**Sources.**
+📄 your own `~/.claude/CLAUDE.md` — **whole thing**, 104 lines. Notice it contains almost no
+rules, only pointers. That restraint is the lesson.
+📄 `~/.claude/LIFEOS/LIFEOS_SYSTEM_PROMPT.md` — read **"## Output Format"** and
+**"## Verification"** only. Skip the rest; it's reference you'll return to in Part 5.
+
+### Do
+
+**1. Send me this:**
+
+> Create `SYSTEM_PROMPT.md` in this folder with three or four rules I actually want enforced,
+> such as never asserting something without checking it first. Then write a `myos` shell alias
+> that launches Claude with `--append-system-prompt-file` pointing at it, and show me the exact
+> line to add to `~/.bashrc`.
+
+**2. Add the alias yourself** and reload:
+```bash
+source ~/.bashrc
+```
+Adding it by hand matters. In chapter 39 you'll write an installer that does this for someone
+else, and you should have felt it once.
+
+### Proof
+
+The two-session comparison. Run each and compare:
+```bash
+claude -p "Quote the first rule in your system prompt, or say you have none."
+myos  -p "Quote the first rule in your system prompt, or say you have none."
+```
+Plain `claude` should have none. `myos` should quote your rule. **Different answers from the
+same question is the proof.**
+
+### Learned
+
+There are two levels of instruction, and you now control both. **Where you use it:** when a
+client says "it keeps ignoring our rule", the answer is usually that the rule is in the wrong
+level. Now you can say so and fix it.
+
+---
+
+## Chapter 5 — Put your rules where updates can't reach them
+
+**Why.** The most expensive mistake in this whole field: a client updates their system and their
+customisations vanish. LifeOS solves it by sorting every file into four zones, where SYSTEM ships
+and gets overwritten and USER is never touched. You are going to build that boundary now, while
+your system is six files, because retro-fitting it later is painful. **This is the most
+commercially valuable hour in the book.**
+
+**Where you are.** Everything sits in one flat folder, all equally overwritable.
+
+**Where you'll be.** A tree where you can point at any file and say which zone it's in, and a
+test proving the USER zone survives a system overwrite.
+
+**Sources.**
+📄 `~/.claude/LIFEOS/DOCUMENTATION/SystemUserBoundary.md` — ✅ **verified.** Read from
+**"## The four zones"** to the end of **"## The four allowed access patterns"**, roughly 40% of
+the file. Skip the "Why this document exists" preamble entirely.
+
+### Do
+
+**1. Send me this:**
+
+> Restructure `myos` into the four zones from `SystemUserBoundary.md`. Identity, TELOS and my
+> rules go in USER. `CLAUDE.md`, `SYSTEM_PROMPT.md` and anything I'd ship go in SYSTEM. Write
+> `ZONES.md` listing every current file and its zone, and explain any file that was hard to
+> classify.
+
+**2. Read `ZONES.md` and argue with at least one row.** The hard cases are where the
+understanding is. `CLAUDE.md` is SYSTEM but it imports USER files: why is that allowed, and what
+would break if it weren't?
+
+### Proof
+
+Simulate an update and check nothing personal died:
+```bash
+cp -r USER /tmp/myos-user-before
+echo "# overwritten by a fake update" > CLAUDE.md
+diff -r USER /tmp/myos-user-before && echo "USER ZONE SURVIVED"
+```
+`USER ZONE SURVIVED` is the pass. Then restore your `CLAUDE.md` from git or ask me to rewrite it.
+
+### Learned
+
+The line between what you ship and what belongs to the user. **Where you use it:** every client
+install, forever. It's the difference between an upgrade that keeps their data and one that eats
+it, and it is the reason your own LifeOS update last week didn't destroy ten months of memory.
+
+---
+
+## Chapter 6 — Checkpoint: the cold-start test
+
+**Why.** Five chapters of building, and no independent evidence any of it works together. A
+checkpoint chapter builds nothing new. It tries to break what you have. Every part in this book
+ends with one, because a system that has never been tested cold is a system you don't yet know.
+
+**Where you are.** Six or seven files across two zones, a launcher, an identity, a TELOS.
+
+**Where you'll be.** Either a green Part 1, or a specific list of what's broken. Both are wins.
+Only "I think it works" is a loss.
+
+**Sources.** None. This is an exam.
+
+### Do
+
+**1. Close everything.** Every session, every terminal. This test is worthless if something is
+warm.
+
+**2. Fresh terminal, `cd` to `myos`, run `myos`.** Ask these five, one at a time, and copy each
+answer into `build/notes/06-coldstart.md`:
+
+| # | Question | Passes if |
+|---|---|---|
+| 1 | Who am I and what do I do? | Correct, specific, from `IDENTITY.md` |
+| 2 | What are my three most active projects? | Names the right three |
+| 3 | What's my single most important goal, and by when? | Cites TELOS with the date |
+| 4 | What rule must you never break with me? | Quotes a rule from `SYSTEM_PROMPT.md` |
+| 5 | Where do skills live in this project? | Correct path from `CLAUDE.md` |
+
+**3. Then try to break it.** Ask something the system should refuse or push back on, based on
+the rules you wrote in chapter 4. If it complies where it should resist, that's chapter 16's
+problem, and worth writing down now.
+
+**4. Send me this:**
+
+> Here are my five answers and the break attempt. Grade each pass or fail, and for every fail
+> tell me which file is at fault and why.
+
+### Proof
+
+5/5, with a written note on the break attempt. Anything less: fix it before Part 2. Skills built
+on a broken foundation just hide the crack.
+
+### Learned
+
+That the pieces work as a system, not just individually. **Where you use it:** this exact test
+is what you'll run on a client's machine before saying it's ready, and what you'll put in the
+README in chapter 41 so they can run it themselves.
+
+---
+---
+
+**Part 2 begins at chapter 7.** I'll write it when you reach chapter 6, so it can build on what
+actually happened rather than what I guessed six weeks earlier. Tell me when you're there.

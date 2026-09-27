@@ -1,0 +1,45 @@
+import type { Component } from '../schema';
+
+export const component: Component = {
+  id: 'cortex',
+  name: 'Cortex',
+  box: 'memory',
+  status: 'Code shipped. The per-prompt hooks, the reviewer, the writer with its safety guards and the tiered store all ship and are registered in this install.',
+  summary: 'The part that remembers. It slips a short list of facts about you into every prompt, and while you are idle it rereads the conversation and rewrites that list.',
+  purpose: 'A [[session]] that ends forgets everything it learned. [[Cortex]] is the store that keeps what each session taught and the loop that puts the relevant part back into [[context]] the moment it matters, so the next session starts smarter than the last.',
+  who: 'lifeos',
+  trigger: 'Two different triggers, one per direction. Reading fires on UserPromptSubmit: `hooks/MemoryTurnStart.hook.ts` runs on every [[prompt]] with an 8 second [[timeout]]. Writing fires at the [[Stop gate]]: `hooks/MemoryReviewFire.hook.ts` counts turns and, when three conditions all hold at once, spawns the reviewer as a background process.',
+  input: 'On the read side, your prompt text and the two [[hot layer]] files. On the write side, the recent [[transcript]] plus the current contents of those same files, because the reviewer is asked to revise a list rather than extend one.',
+  output: 'On the read side, blocks of [[additionalContext]] injected before the model sees your prompt. On the write side, typed items routed to their homes: hot-layer facts, notes in the [[knowledge archive]], and proposals queued for your approval.',
+  files: [
+    { path: 'hooks/MemoryTurnStart.hook.ts', mode: 'exec', note: 'the one UserPromptSubmit memory hook; composes three sub-hooks plus retrieval in a single process' },
+    { path: 'hooks/LoadMemory.hook.ts', mode: 'exec', note: 'renders the two hot-layer files as a lifeos-memory block' },
+    { path: 'hooks/MemoryDeltaSurface.hook.ts', mode: 'exec', note: 'computes the visible memory status line so the model never invents one' },
+    { path: 'hooks/MemoryReviewFire.hook.ts', mode: 'exec', note: 'registered on Stop; counts turns, decides, and fires the reviewer' },
+    { path: 'LIFEOS/TOOLS/MemoryReviewer.ts', mode: 'exec', note: 'reads the recent transcript, calls a cheap model, routes the typed items it returns' },
+    { path: 'LIFEOS/TOOLS/MemoryRetriever.ts', mode: 'exec', note: 'BM25 search over the typed corpus; pure function, no model call' },
+    { path: 'LIFEOS/USER/PRINCIPAL/PRINCIPAL_MEMORY.md', mode: 'read+write', note: 'the hot layer about you; capped at 48 entries of 256 characters' },
+    { path: 'LIFEOS/MEMORY/KNOWLEDGE', mode: 'write', note: 'the curated archive of people, companies, ideas and research' },
+  ],
+  how: 'Read first, because it happens on every single [[turn]]. `hooks/MemoryTurnStart.hook.ts` is one process doing four jobs. It injects the two hot-layer files, it emits the visible status line, and it runs [[BM25]] [[retrieval]] over the typed corpus using your actual prompt as the query, taking the top five hits above a score of 0.20. Below that threshold it injects nothing at all, header included, so a trivial prompt costs no [[token]]. The hot layer is gated separately: it goes in on the first prompt of a session, whenever the files changed, or after twenty turns without an injection, because injecting the same block on every prompt duplicated it dozens of times per session.\n\nWrite is the other half, and it is why Cortex counts as both a read box and a write box. `hooks/MemoryReviewFire.hook.ts` runs at Stop and gates on three conditions joined by AND: at least eight turns in this session, at least thirty minutes since the last review anywhere, and at least two minutes idle. Only then does `LIFEOS/TOOLS/MemoryReviewer.ts` spawn. It reads the recent transcript, calls a cheap model, and gets back typed items. A new prompt before the timer expires cancels the whole thing.\n\nThe write mode is the interesting design choice. The reviewer is not asked to append a fact. It is shown the current list and asked for the full desired next state, which the writer applies as a replace. So forgetting is omission: a stale fact is dropped by leaving it out, and a contradicted one is superseded. That is what makes a capped list survivable, since the system can always drop something to make room. It is also dangerous, because a replace has whole-file blast radius, so two guards run inside the lock. One blocks a result that is near-empty or drops more than half the entries with no additions. The other catches slow erosion, where each write is ten percent smaller than the last and every individual write looks fine. Every write also snapshots the previous file into a ring buffer first, so a single bad revision is reversible.\n\nOne permission rule sits under all of it. `LIFEOS/TOOLS/MutationTier.ts` is a code-only allowlist that is default-deny. Tier A is overwritten automatically. Tier B is appended with an audit row. Tier C can only be proposed for your approval. Tier D, which includes hooks, settings, skills and the rules file, is untouchable by the memory system entirely.',
+  sources: [
+    'LIFEOS/DOCUMENTATION/Memory/MemorySystem.md',
+    'hooks/MemoryTurnStart.hook.ts',
+    'hooks/LoadMemory.hook.ts',
+    'hooks/MemoryDeltaSurface.hook.ts:L1-L60',
+    'skills/Cortex/SKILL.md:L1-L55',
+  ],
+  alternatives: [
+    { name: 'Append-only notes that never forget', tradeoff: 'Wins on never losing anything, and the history is auditable. Costs relevance and context budget: the file grows without bound, contradictions pile up next to each other, and eventually the true fact and the fact it replaced are both in the prompt.' },
+    { name: 'A vector database with embedding search', tradeoff: 'Wins on finding things you asked for in different words than you stored them. Costs a service to run, an index to keep in step with the files, and explainability, since you cannot read a diff of why a fact surfaced. Cortex explicitly declares no index and searches the canonical files directly.' },
+    { name: 'The harness built-in automatic memory', tradeoff: 'Wins on zero setup and no code to maintain. Costs control over what is remembered, where it lives and who may write it. LifeOS disables it in the shipped settings so there is one store rather than two that disagree.' },
+  ],
+  why: 'Cortex chose a small capped list of plain files over a growing archive because the read path runs on every turn and has to stay cheap and legible. Facts you can read in a text editor are facts you can correct. The revise-the-whole-list model is what makes a cap workable instead of a wall you hit, and it is why forgetting is a first-class operation rather than an accident. The costs are honest and documented. A replace can destroy, so two guards and a snapshot ring exist purely to survive one bad revision. Every read is a [[fail-open]] path, meaning any error writes to [[stderr]] and exits zero rather than blocking your prompt, which also means a dead hook looks exactly like a quiet week. That is why a heartbeat file and a health check exist to catch silence that should have been noise.',
+  examples: [
+    { field: 'distribution', text: 'Over a few weeks the system learns that this wholesaler counts a case as twelve bottles, that the Tbilisi depot closes at 4pm so same-day cutoffs are 2pm, and that one customer group is invoiced monthly rather than per delivery. None of that is in the code. It sits in the hot layer, so a request for a delivery report on a Friday afternoon already knows what a case is and which orders cannot make today.' },
+    { field: 'orchestra', text: 'A rehearsal assistant that remembers the second oboe is on leave until March, that the hall\'s reverb makes the brass sit two clicks under, and that the conductor takes the third movement faster than the marking. Next week it does not have to be told again. When the oboe comes back, the right move is not to add a new note. It is to drop the old one, which is exactly what a revise-the-list write does.' },
+  ],
+  related: ['synapse', 'conduit', 'learning', 'hooks', 'algorithm'],
+  without: 'Without this: every session starts from zero, and the same corrections get typed again next week.',
+  failure: 'You notice it is broken when the system asks you something you explained last week, or when a fact you corrected keeps coming back in later sessions.',
+};
