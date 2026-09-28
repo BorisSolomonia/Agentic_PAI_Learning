@@ -18,6 +18,8 @@ step says "see Chapter N" it means that file.
 > how every option is built, what it gains and costs, and which to pick for a personal system or a product
 > (rule 9). Every written step now points to its decisions, and steps 3–5 carry a short alternatives table.
 
+> **Applied Agentic Finance track · 2026-09-28.** If your goal is to learn production agent architecture by building real finance/operations workflows, use `AGENTIC-FINANCE-30D.md` in parallel with this course. This file teaches the mechanisms; the applied track decides when and why to use them against Boris's real business process. For every major implementation decision, use `AGENT-ARCHITECTURE-GUIDE.md` and the NotebookLM source packs linked from the applied track. GitHub is the knowledge/code/evidence source of truth; Trello is the execution system; Calendar protects the 2-hour build block.
+
 ## PATH KEY: where every path in this course lives
 
 | A path that starts with… | Lives in | In Windows Explorer | In the Ubuntu terminal |
