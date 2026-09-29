@@ -1,759 +1,1326 @@
-# Agentic Finance — 30-day applied learning track
+# Agentic Finance MOOC — Curriculum
 
-**Started:** 2026-09-28  
-**Cadence:** 2 hours × 5 days/week; weekends off.  
-**Execution:** Trello is the commitment system; Calendar protects time; GitHub is the knowledge/code/evidence source of truth.  
-**Parallel theory track:** COURSE.md.  
-**Architecture method:** AGENT-ARCHITECTURE-GUIDE.md.  
-**Master learning notebook:** https://notebook.google.com/notebook/a6068935-ef1d-444f-8827-dc2be63d4d95
+**Purpose:** learn to architect and build production AI-agent systems for finance and operations by building a real system, not by finishing a framework course.
 
-This track does not replace COURSE.md. COURSE.md teaches the mechanisms of a LifeOS-class harness. This file applies those mechanisms to real business processes while also pulling in Udemy, primary vendor documentation, reference implementations, security/evaluation material, and competing architecture patterns.
+**Cadence:** 2 hours/day × 5 days/week = 10 hours/week.
 
-The business process is revealed progressively. Do not invent the remaining process. Each newly described slice changes the architecture only after it is analyzed.
+**Benchmark:** University of Helsinki Java Programming MOOC. The benchmark course is organized into weekly parts, each part contains focused lessons with explicit learning objectives, explanations and many programming exercises, and later parts culminate in larger open-ended exercises. This curriculum copies that *learning architecture*, not the Java content.
 
----
+**Applied business:** the first known process slice is:
 
-# 1. Outcome
+**Customer message → Seller → order interpretation/aggregation → Manager → product / price / inventory context → consolidated operational order**
 
-The target is not “finish a course.”
+Only this slice is assumed. Boris will progressively provide the remaining business process. The course must not invent it.
 
-The target is to become able to take a real finance/operations process and:
-
-- map it;
-- decide what should be deterministic software vs model reasoning;
-- decide whether an agent is needed;
-- design tools and schemas;
-- choose state/memory/retrieval architecture;
-- decide single-agent vs specialist agents vs orchestrator;
-- compare model/framework/provider alternatives;
-- implement with AI assistance while owning the architecture;
-- build evals and tracing;
-- add approvals/guards;
-- deploy a usable system;
-- explain why the architecture is the way it is and when it should change.
-
-The platform may eventually contain many agents with distinct missions plus one or more orchestrators. That is an outcome to earn, not a Day-1 assumption.
+**Parallel references:**  
+- `COURSE.md` — LifeOS/harness theory and mechanisms  
+- `AGENT-ARCHITECTURE-GUIDE.md` — decision method  
+- `ALTERNATIVES.md` — deep design alternatives  
+- `CHECKLIST.md` — safety/verification rules  
+- NotebookLM — source-grounded comparison, recall, quizzes and synthesis  
+- Udemy — targeted runtime-agent instruction, pulled in when the current build needs it
 
 ---
 
-# 2. Current known business slice
+# How to use this curriculum
 
-The first small slice currently known is:
+Do not read the whole repository every day.
 
-**Customer → Viber message → Seller → seller aggregates orders → Manager → inventory / product / price context → consolidated operational order**
+For each day, follow the same loop:
 
-Known message content often includes:
+1. **Whole-picture position** — understand which piece of the agent system you are learning.
+2. **Learning objectives** — know what you must be able to explain by the end.
+3. **Read/watch** — only the sources listed for that day.
+4. **NotebookLM** — write your prediction first, then compare sources and inspect citations.
+5. **Alternatives** — read the relevant `ALTERNATIVES.md` decisions.
+6. **Build** — produce working code.
+7. **Break/evaluate** — deliberately cause failures and measure them.
+8. **Teach back** — explain the concept without notes.
+9. **Commit evidence** — code, tests, ADR, examples, eval result.
+10. **Trello Done** only when proof passes.
 
-- customer name;
-- product;
-- quantity;
-- price;
-
-but message shape varies.
-
-Potential capabilities may eventually include:
-
-- interpreting customer messages received by sellers;
-- turning heterogeneous messages into structured order candidates;
-- helping a seller aggregate multiple customer orders;
-- aggregating seller outputs for the manager;
-- checking product/inventory/price data;
-- identifying missing/ambiguous information;
-- routing exceptions to a human.
-
-These are candidate capabilities. They are not yet guaranteed to be separate agents.
-
-Boris will provide the remaining business process incrementally. Every new slice is processed with AGENT-ARCHITECTURE-GUIDE.md before implementation.
+The course is **creation-first**. Reading exists to answer a design question that blocks the build.
 
 ---
 
-# 3. Weekly operating system
+# The whole system you are building
 
-## Source of truth
+Keep this chain visible while studying:
 
-**GitHub**
-- architecture;
-- code;
-- ADRs;
-- source packs;
-- eval datasets/results;
-- failure evidence.
+```text
+BUSINESS EVENT
+    ↓
+INPUT / CHANNEL
+(Viber now; other channels later)
+    ↓
+INTAKE / NORMALIZATION
+    ↓
+LLM INTERPRETATION
+(structured extraction / classification / reasoning)
+    ↓
+AGENT LOOP
+(decide what to do next)
+    ↓
+TOOLS
+(product, price, inventory, customer, etc.)
+    ↓
+DETERMINISTIC BUSINESS LOGIC
+(validation, arithmetic, rules)
+    ↓
+STATE
+(current order / workflow progress)
+    ↓
+OPTIONAL SPECIALIST AGENTS
+(only when their own mission/context/tools/evals justify them)
+    ↓
+ORCHESTRATION
+(deterministic or agentic)
+    ↓
+HUMAN APPROVAL / SIDE EFFECTS
+    ↓
+OUTPUT / ACTION
+    ↓
+TRACE + EVAL + AUDIT
+    ↓
+MEMORY / RETRIEVAL
+(only for information that semantically belongs there)
+```
 
-**Trello**
-- Agentic Finance = upstream option pool;
-- week sprint = committed work;
-- Today = started work;
-- Done = finished work.
+Every daily lesson must answer:
 
-**Google Calendar**
-- protected execution time;
-- descriptive session plan.
-
-## Kanban policies
-
-Commitment point: card moves into **week sprint**.
-
-Started point: card moves into **Today**.
-
-Finished point: the card’s proof/eval and teach-back conditions pass, then it moves to **Done**.
-
-WIP:
-- Agentic Finance work in Today: normally 1 primary card;
-- do not start a replacement merely because the active item became uncomfortable;
-- mark a blocker and resolve it or deliberately decommit it.
-
-One build/learning card should normally fit in one 2-hour block and end in an observable artifact.
-
-Once a card enters week sprint, keep it stable unless:
-- an architectural assumption was disproven;
-- a real customer/Upwork opportunity gives a better version of the same learning objective;
-- a blocker makes the task impossible.
-
-Everything remaining in Agentic Finance can be reordered freely.
-
-Friday feedback loop:
-**evidence + failures + new business-process detail + Upwork signals → next week’s sprint.**
-
-Kanban sources:
-- Kanban University principles/practices: https://kanban.university/principles-general-practices-kanban-method/
-- Atlassian WIP guidance: https://www.atlassian.com/agile/kanban/wip-limits
-- Trello automation docs: https://support.atlassian.com/trello/docs/create-and-manage-automations/
-- Trello dates/cards: https://support.atlassian.com/trello/docs/adding-dates-to-cards/
-
----
-
-# 4. Daily session shapes
-
-The session type follows the work; it is not mechanically identical every day.
-
-## Architecture-heavy day — 11:15–13:15
-
-- 11:15–11:35 — NotebookLM source study/comparison.
-- 11:35–11:50 — prediction + architecture decision.
-- 11:50–12:50 — build the smallest vertical slice.
-- 12:50–13:05 — break/test/eval.
-- 13:05–13:15 — closed-book teach-back + NotebookLM quiz/check.
-
-## Build-heavy day
-
-- 10–15 min targeted source check.
-- 75–85 min implementation.
-- 15–20 min eval/trace/failure analysis.
-- 10 min teach-back and ADR update.
-
-## Friday review
-
-Use part of the main 2-hour block for:
-- eval results;
-- failure log;
-- architecture decisions that changed;
-- NotebookLM cumulative quiz;
-- Upwork pattern synthesis;
-- next-week sprint pull.
-
-## Upwork market scan — 13:45–14:00 weekdays
-
-ChatGPT is the primary triage layer:
-- identify jobs aligned with finance/ERP/operations + agent engineering;
-- classify BUILD NOW / LEARN GAP / SKIP;
-- extract hidden architecture requirements;
-- identify the single capability gap;
-- judge portfolio/profile fit;
-- draft a tailored bid when appropriate.
-
-Codex is primarily for technical execution after a job is selected:
-- inspect repos;
-- prototype;
-- estimate from code;
-- implement/test.
-
-A future scan becomes more profile-aware once Boris provides his exact Upwork profile URL.
+- Where am I in this chain?
+- What does this piece depend on?
+- What depends on this piece?
+- What happens if I remove it?
+- What are the realistic alternatives?
+- Why is the chosen implementation justified *for this process*?
 
 ---
 
-# 5. Source policy
+# Source registry
 
-For every consequential architecture decision the course provides a **Notebook Source Pack**.
+Use primary sources first.
 
-A source pack should normally include:
-- primary framework/model/vendor docs;
-- one or more competing architecture sources;
-- reference implementation/repository;
-- evaluation or security/limitation material;
-- domain-specific material when relevant.
+## S0 — Benchmark: course design
 
-Prefer primary sources. Tutorials are secondary.
+- Helsinki Java Programming MOOC: https://java-programming.mooc.fi/
+- Example lesson structure: https://java-programming.mooc.fi/part-1/1-starting-programming/
+- Larger exercises: https://java-programming.mooc.fi/part-7/3-larger-exercises/
+- Source repository: https://github.com/rage/java-programming
 
-The purpose is not to ask NotebookLM “which is best?” The purpose is to understand:
-- what problem each pattern solves;
-- how it works;
-- what it costs;
-- where state and authority live;
-- how it fails;
-- when a simpler deterministic approach wins.
+## S1 — Main agent fundamentals
 
----
+- Anthropic — Building effective agents: https://www.anthropic.com/engineering/building-effective-agents
+- OpenAI Agents SDK: https://openai.github.io/openai-agents-python/
+- OpenAI Agents SDK — tools: https://openai.github.io/openai-agents-python/tools/
+- OpenAI Agents SDK — multi-agent: https://openai.github.io/openai-agents-python/multi_agent/
+- OpenAI Agents SDK — handoffs: https://openai.github.io/openai-agents-python/handoffs/
+- OpenAI Agents SDK — tracing: https://openai.github.io/openai-agents-python/tracing/
+- OpenAI Agents SDK — testing: https://openai.github.io/openai-agents-python/testing/
+- Google ADK — agents: https://google.github.io/adk-docs/agents/
+- Google ADK — workflows: https://google.github.io/adk-docs/workflows/
+- LangChain/LangGraph learning docs: https://docs.langchain.com/oss/python/learn
+- CrewAI Flows: https://docs.crewai.com/en/concepts/flows
+- Model Context Protocol: https://modelcontextprotocol.io/
 
-# 6. NotebookLM learning protocol
+## S2 — Structured outputs / schemas / tool calls
 
-NotebookLM is the source-grounded learning and synthesis layer, not the architecture decision-maker.
+- Gemini structured output: https://ai.google.dev/gemini-api/docs/structured-output
+- Gemini function calling: https://ai.google.dev/gemini-api/docs/function-calling
+- Anthropic — Writing tools for agents: https://www.anthropic.com/engineering/writing-tools-for-agents
+- Pydantic docs: https://docs.pydantic.dev/latest/
 
-Official feature references:
-- NotebookLM Help: https://support.google.com/notebooklm/answer/16246230
-- learning features / quizzes / flashcards: https://blog.google/innovation-and-ai/models-and-research/google-labs/notebooklm-student-features/
-- source selection + mobile quizzes/flashcards: https://blog.google/innovation-and-ai/models-and-research/google-labs/notebooklm-app-quizzes-flashcards/
-- research upgrades: https://blog.google/innovation-and-ai/products/notebooklm/better-research-notebooklm/
-- Audio Overviews: https://blog.google/innovation-and-ai/products/notebooklm-audio-overviews/
-- Video Overviews / Studio / Mind Maps: https://blog.google/innovation-and-ai/models-and-research/google-labs/notebooklm-video-overviews-studio-upgrades/
+## S3 — Python runtime foundations
 
-Use corresponding features deliberately:
+- Python async/await: https://docs.python.org/3/library/asyncio-task.html
+- Python typing: https://docs.python.org/3/library/typing.html
+- pytest: https://docs.pytest.org/en/stable/
+- HTTPX: https://www.python-httpx.org/
 
-| Feature | Course use |
-|---|---|
-| grounded chat + citations | compare architectural claims and open source passages |
-| source selection | isolate only the alternatives being compared |
-| Discover Sources / research | expand the design space before important decisions |
-| Mind Maps | understand relationships among loop, tools, state, memory, agents, orchestration |
-| quizzes | post-build mastery check |
-| flashcards | precise distinctions and vocabulary |
-| Learning Guide / reports | first-pass synthesis before implementation |
-| Audio Overview | reinforcement outside the protected build block |
-| Video Overview | visual reinforcement for architecture-heavy concepts |
-| notes | prediction, source disagreement, decision rationale |
+## S4 — Evaluation / observability / security
 
-Rule: write your prediction before NotebookLM gives you the comparison.
+- OpenAI Agents SDK tracing: https://openai.github.io/openai-agents-python/tracing/
+- OpenAI Agents SDK testing: https://openai.github.io/openai-agents-python/testing/
+- LangSmith evaluation concepts: https://docs.langchain.com/langsmith/evaluation
+- OWASP LLM Prompt Injection Prevention: https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html
 
----
+## S5 — NotebookLM learning layer
 
-# 7. Core sources used throughout the track
+Master notebook:
+https://notebook.google.com/notebook/a6068935-ef1d-444f-8827-dc2be63d4d95
 
-## Main course
+- NotebookLM help: https://support.google.com/notebooklm/
+- Google NotebookLM learning features / quizzes / flashcards: https://blog.google/innovation-and-ai/models-and-research/google-labs/notebooklm-student-features/
+- NotebookLM research/source discovery: https://blog.google/innovation-and-ai/products/notebooklm/better-research-notebooklm/
+- NotebookLM video/studio features: https://blog.google/innovation-and-ai/models-and-research/google-labs/notebooklm-video-overviews-studio-upgrades/
 
-Udemy — The Complete Agentic AI Engineering Course:
-https://www.udemy.com/course/the-complete-agentic-ai-engineering-course/learn/lecture/49820721#notes
+## S6 — User's main video course
 
-Use the relevant lesson when today’s build reaches that mechanism. Do not wait to finish the course linearly before building.
+- Udemy — The Complete Agentic AI Engineering Course: https://www.udemy.com/course/the-complete-agentic-ai-engineering-course/learn/lecture/49820721#notes
 
-## Reference architecture
-
-Daniel Miessler LifeOS:
-https://github.com/danielmiessler/LifeOS
-
-Local curriculum/reference:
-- COURSE.md
-- ALTERNATIVES.md
-- CHECKLIST.md
-- research/
-- build/myos/
-- build/notes/FAILURES.md
-
-## Agent architecture alternatives
-
-Anthropic — Building effective agents:
-https://www.anthropic.com/engineering/building-effective-agents
-
-Anthropic — Building Effective AI Agents architecture guide:
-https://resources.anthropic.com/building-effective-ai-agents
-
-OpenAI Agents SDK:
-https://openai.github.io/openai-agents-python/
-
-OpenAI agent orchestration:
-https://openai.github.io/openai-agents-python/multi_agent/
-
-LangChain/LangGraph learning/multi-agent patterns:
-https://docs.langchain.com/oss/python/learn
-
-CrewAI Flows:
-https://docs.crewai.com/en/concepts/flows
-
-Google Agent Development Kit:
-https://google.github.io/adk-docs/agents/
-https://google.github.io/adk-docs/workflows/
-
-Model Context Protocol:
-https://modelcontextprotocol.io/
-
-## Tool design / security / evals
-
-Anthropic — Writing effective tools for agents:
-https://www.anthropic.com/engineering/writing-tools-for-agents
-
-OpenAI Agents SDK tools:
-https://openai.github.io/openai-agents-python/tools/
-
-Gemini function calling:
-https://ai.google.dev/gemini-api/docs/function-calling
-
-Gemini structured output:
-https://ai.google.dev/gemini-api/docs/structured-output
-
-OWASP prompt injection prevention:
-https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html
-
-OpenAI Agents SDK tracing:
-https://openai.github.io/openai-agents-python/tracing/
-
-OpenAI Agents SDK deterministic testing:
-https://openai.github.io/openai-agents-python/testing/
-
-LangSmith evaluation types:
-https://docs.langchain.com/langsmith/evaluation-types
+Do not watch Udemy linearly. Select the lesson that matches the mechanism being built today.
 
 ---
 
-# 8. Week 1 — detailed plan
+# Week 1 — From business process to one reliable agent loop
 
-This first week is intentionally only four execution sessions because the plan is being activated after Monday’s protected block has already passed. Friday still closes the week and generates Week 2.
+## Weekly whole-picture goal
 
-The objective is not to finish the order system. It is to learn and prove the first architectural primitives on the first real business slice.
+At the end of Week 1 you should have one small but real vertical slice:
+
+```text
+unstructured customer order message
+        ↓
+structured OrderCandidate
+        ↓
+deterministic validation
+        ↓
+typed product / inventory tool
+        ↓
+agent/tool loop
+        ↓
+traceable result
+        ↓
+repeatable eval
+```
+
+This is intentionally **not yet a multi-agent system**.
+
+Why: if you cannot build, inspect, test and explain one reliable loop, adding more agents multiplies uncertainty rather than capability.
+
+### Week 1 depends on
+
+- your existing software-engineering knowledge;
+- basic Python ability;
+- an LLM API/provider;
+- synthetic order examples.
+
+### Week 1 unlocks
+
+- stateful order aggregation;
+- specialist-agent boundaries;
+- orchestration;
+- memory/retrieval;
+- channel integration;
+- production evaluation.
 
 ---
 
-## Session 1 — Tue 2026-09-29
-# Model the first business slice + build one tiny vertical slice
+## Day 1 — Process decomposition: workflow vs LLM call vs agent
 
-### Outcome
+### What you learn
 
-A real process map exists for:
-**customer message → seller → aggregate → manager → inventory context**
+You learn to look at a business process and identify which parts are:
 
-and one synthetic message can travel through a minimal executable path into a structured order candidate.
-
-### Business questions
-
-Clarify only what is necessary from the process already known:
-- who receives which message;
-- what seller currently changes/combines;
-- what manager needs;
-- what inventory data is needed and when;
-- what may be missing/ambiguous.
-
-Do not invent the remaining 98% of the business.
-
-### Architecture decision
-
-Classify each known step:
 - deterministic workflow;
 - extraction;
+- classification;
+- retrieval;
 - reasoning;
-- retrieval/tool;
-- possible future agent;
-- human judgment.
+- human judgment;
+- truly agentic decision-making.
 
-Do not decide “two agents” merely because two humans currently touch the order.
+You also learn the difference between:
 
-### COURSE/LifeOS mirror
+1. deterministic code;
+2. one LLM call;
+3. tool-using agent loop;
+4. multi-agent system.
 
-Read/review:
-- COURSE.md Part 2 intro and Steps 7–9.
-- ALTERNATIVES D6–D9.
-- build/notes/01-five-surfaces.md.
+### Why this matters / whole-picture position
 
-Focus question:
-**What is an agent mechanically, and which capability here actually needs one?**
+**Position in chain:** before implementation — this is the architectural boundary-setting step.
 
-### Notebook Source Pack
+Everything later depends on this decomposition. If you classify the process incorrectly, later choices about tools, state, agents and orchestrators will also be wrong.
 
-Add/select:
-- Anthropic building effective agents: https://www.anthropic.com/engineering/building-effective-agents
-- OpenAI Agents SDK overview: https://openai.github.io/openai-agents-python/
-- Google ADK agents: https://google.github.io/adk-docs/agents/
-- LangGraph/LangChain learning patterns: https://docs.langchain.com/oss/python/learn
-- LifeOS: https://github.com/danielmiessler/LifeOS
-- AGENT-ARCHITECTURE-GUIDE.md from this repo.
+### Depends on
 
-NotebookLM questions:
-1. Compare workflow, augmented LLM, agent loop, and multi-agent system.
-2. What evidence would justify moving from one model call to an agent loop?
-3. Where do these sources explicitly favor simpler architecture?
-4. Which parts of the current order slice are likely deterministic?
-5. Show citations for each answer.
+- only the real business flow and example messages.
 
-Before asking: write your prediction.
+### Unlocks
 
-### Build
+- schema design;
+- tool boundaries;
+- deciding whether an agent is justified at all.
 
-Use synthetic but realistic order messages.
+### Read online
 
-Minimum executable slice:
-**message string → structured OrderCandidate → printed result**
+- S1 Anthropic — Building effective agents.
+- S1 OpenAI Agents SDK overview.
+- S1 Google ADK agents.
+- S1 LangChain/LangGraph learning overview.
 
-No production Viber integration yet.
+### Read locally
 
-### Break it
+- `AGENT-ARCHITECTURE-GUIDE.md` §1–§3.
+- `COURSE.md` Steps 7–8 overview.
+- `ALTERNATIVES.md` D6–D8.
 
-Use at least:
+### Alternatives to understand
+
+From `ALTERNATIVES.md`:
+- D6 capability packaging;
+- D7 capability triggering;
+- D8 where tools/scripts/config live.
+
+Also compare:
+- plain deterministic workflow;
+- one structured model call;
+- one agent with tools;
+- multiple specialist agents.
+
+### NotebookLM — write your answer first
+
+Ask after writing your prediction:
+
+1. What exact property makes a system “agentic” rather than merely AI-powered?
+2. Where do the sources recommend a workflow instead of an agent?
+3. What evidence would justify moving from one model call to a loop?
+4. What additional failure modes appear when a second agent is added?
+5. For the current order process, which steps appear deterministic and which appear ambiguous?
+6. Cite every important claim and show where the sources disagree.
+
+### Implement
+
+Create:
+
+```
+build/agentic-finance/process/first-order-slice.md
+build/agentic-finance/decisions/ADR-001-process-decomposition.md
+```
+
+Map:
+
+```text
+Customer message → Seller → aggregation → Manager → inventory context
+```
+
+Classify every known step.
+
+Then build the smallest executable spike:
+
+```text
+raw synthetic message → OrderCandidate → print
+```
+
+Do not add a framework unless the spike requires it.
+
+### Exercise 1A — message samples
+
+Create at least 8 synthetic examples:
+- normal one-product order;
 - missing quantity;
-- two products in one message;
-- unknown product wording.
+- multiple products;
+- colloquial product name;
+- customer name omitted;
+- price omitted;
+- conflicting quantity;
+- instruction-like text inside message.
 
-### Proof
+### Break / evaluate
 
-Repository contains:
-- process diagram/Markdown;
-- initial ADR;
-- executable minimal slice;
-- 3 example inputs and results.
+Try at least 3 cases that should fail or escalate.
 
-### Teach-back
+### Day outcome
 
-Explain without notes:
-- why this is not yet a multi-agent architecture;
-- what the model is doing;
-- what deterministic software will eventually surround it;
-- what would justify an orchestrator later.
+You can explain:
+
+- why the process is not automatically a multi-agent system;
+- what part currently needs model interpretation;
+- what remains deterministic;
+- what evidence would justify a future specialist agent.
+
+**Artifact:** process map + ADR-001 + tiny runnable spike + sample messages.
 
 ---
 
-## Session 2 — Wed 2026-09-30
-# Own the agent loop + structured extraction/tool boundary
+## Day 2 — Structured outputs: turn language into a contract
 
-### Outcome
+### What you learn
 
-A minimal loop can receive an order-related message, produce validated structured intent, decide whether a tool is needed, call a typed tool, observe the result, and return a result.
+You learn how unstructured language becomes validated structured data using schemas.
 
-### Core lesson
+Core distinction:
 
-A tool call is not magic:
-**model proposes structured action → application validates → code executes → result returns → model continues.**
+```text
+LLM can propose structure
+≠
+business data is correct
+```
 
-### Architecture decisions
+### Whole-picture position
+
+```text
+customer message
+    ↓
+[STRUCTURED EXTRACTION] ← TODAY
+    ↓
+validation
+    ↓
+tools / business logic
+```
+
+Without a stable structured boundary, tools and deterministic code cannot safely consume model output.
+
+### Depends on
+
+- Day 1 process decomposition;
+- representative message examples.
+
+### Unlocks
+
+- typed tools;
+- deterministic validation;
+- repeatable evals;
+- provider comparison.
+
+### Read online
+
+- S2 Gemini structured output.
+- S2 Pydantic docs.
+- S1 OpenAI Agents SDK relevant structured/agent examples.
+- S6 Udemy structured output/tool-calling material relevant to this mechanism.
+
+### Read locally
+
+- `AGENT-ARCHITECTURE-GUIDE.md` §4 agent mission and §5 tool boundary.
+- `COURSE.md` Step 7.
+- `ALTERNATIVES.md` D6 and D9.
+
+### Alternatives
 
 Compare:
-- raw model/API loop;
-- OpenAI Agents SDK;
-- LangGraph;
-- CrewAI Flow;
-- Google ADK;
-- deterministic workflow with one extraction call.
+- regex/parser;
+- model returns free text;
+- model returns JSON by prompt convention;
+- schema-constrained structured output;
+- extraction + deterministic post-validation.
 
-Choose one primary implementation for the exercise and record why.
+### NotebookLM questions
 
-Language decision:
-Python is the default for this track because the Udemy and current agent ecosystem make it efficient for learning. TypeScript remains a valid alternative and should be selected when the product/runtime evidence favors it.
+1. What does schema validation guarantee?
+2. What can schema validation *not* guarantee?
+3. When is a parser better than an LLM?
+4. How should unknown/missing fields be represented?
+5. Should price be extracted, retrieved, or both?
+6. What is the difference between syntactic validity and business validity?
 
-### COURSE/LifeOS mirror
+### Implement
 
-- COURSE Step 7 — capability packaging.
-- Step 8 — triggering/routing.
-- Step 9 — numbers from code.
-- ALTERNATIVES D6–D9.
+Create an `OrderCandidate` schema.
 
-### Notebook Source Pack
+Minimum conceptual fields:
+- customer reference;
+- one or more order lines;
+- raw product text;
+- quantity;
+- unit if relevant;
+- stated price if present;
+- ambiguity/missing-field indicators;
+- source message identifier.
 
-- Udemy course: https://www.udemy.com/course/the-complete-agentic-ai-engineering-course/learn/lecture/49820721#notes
-- OpenAI tools: https://openai.github.io/openai-agents-python/tools/
-- Gemini function calling: https://ai.google.dev/gemini-api/docs/function-calling
-- Anthropic tool design: https://www.anthropic.com/engineering/writing-tools-for-agents
-- CrewAI Flows: https://docs.crewai.com/en/concepts/flows
-- Google ADK workflows: https://google.github.io/adk-docs/workflows/
-- LangGraph/LangChain: https://docs.langchain.com/oss/python/learn
+Do not hardcode the business product catalog in the prompt.
 
-NotebookLM comparison:
-- who owns the loop;
-- where state lives;
-- how tools are described;
-- how errors propagate;
-- how much framework machinery appears;
-- what is portable.
+### Exercise 2A
 
-### Build
+Parse the 8+ Day-1 messages into the same schema.
 
-Implement at least one typed read-only tool such as:
-- resolve_product(name)
-or
-- get_product_info(product_id)
+### Exercise 2B
 
-The tool may use synthetic data.
+Make malformed cases fail safely rather than silently inventing fields.
 
-### Break it
+### Break / evaluate
 
-- invalid tool arguments;
-- unknown product;
-- model chooses tool when it should not;
-- ambiguous product name.
+Measure:
+- schema-valid rate;
+- missing-field detection;
+- false invented values.
 
-### Proof
+### Day outcome
+
+You can explain where the structured-output layer sits and why every downstream tool depends on it.
+
+**Artifact:** schema + extraction implementation + tests/examples + ADR update.
+
+---
+
+## Day 3 — Tool calling: LLM chooses; code executes
+
+### What you learn
+
+You learn the mechanical agent/tool loop:
+
+```text
+user/input
+   ↓
+model
+   ↓
+tool proposal + arguments
+   ↓
+application validation
+   ↓
+deterministic tool code
+   ↓
+tool result
+   ↓
+model / final result
+```
+
+### Whole-picture position
+
+This is the bridge between probabilistic interpretation and trusted business systems.
+
+### Depends on
+
+- Day 2 typed schema;
+- deterministic functions or synthetic data source.
+
+### Unlocks
+
+- inventory/product/customer lookups;
+- agent loops;
+- safe read-only business integration;
+- orchestration later.
+
+### Read online
+
+- S1 OpenAI Agents SDK tools.
+- S2 Anthropic — Writing tools for agents.
+- S2 Gemini function calling.
+- S3 Python typing.
+- S6 corresponding Udemy tool-calling lesson.
+
+### Read locally
+
+- `COURSE.md` Steps 7–9.
+- `ALTERNATIVES.md` D8–D9.
+- `CHECKLIST.md` CK-014, CK-017.
+
+### Alternatives
+
+Compare:
+- tool calling;
+- model generates code;
+- SQL exposed directly;
+- business API;
+- MCP server;
+- one coarse business tool vs many CRUD tools.
+
+### NotebookLM questions
+
+1. What makes a good tool boundary?
+2. Why should the model not compute authoritative money/inventory numbers?
+3. When are many small tools worse than one semantic tool?
+4. What validation belongs below the prompt?
+5. Compare native function calling vs MCP conceptually.
+
+### Implement
+
+Build one deterministic read-only tool, e.g.:
+
+```python
+resolve_product(raw_name)
+```
+
+and/or:
+
+```python
+get_inventory(product_id)
+```
+
+Synthetic source data is enough.
 
 Log:
-- model input;
-- proposed structured/tool action;
-- validated arguments;
-- deterministic tool result;
-- final output.
-
-### Teach-back
-
-Draw the loop from memory and explain exactly where the LLM stops and ordinary code begins.
-
----
-
-## Session 3 — Thu 2026-10-01
-# Put business truth below the model: validation + inventory/price tool
-
-### Outcome
-
-The model cannot invent inventory/price as business truth. A deterministic source returns the values and validation catches impossible/ambiguous order fields.
-
-### Architecture decisions
-
-Compare:
-- model arithmetic/guessing;
-- deterministic Python/TS code;
-- SQL;
-- API;
-- MCP tool;
-- cached snapshot.
-
-For each field decide source of truth:
-customer, product, quantity, price, inventory.
-
-### COURSE/LifeOS mirror
-
-- COURSE Steps 9–10.
-- ALTERNATIVES D9 — numbers.
-- D10 — untrusted data.
-- CHECKLIST.md safeguards relevant to deterministic guarantees.
-
-### Notebook Source Pack
-
-- OpenAI Agents SDK tools: https://openai.github.io/openai-agents-python/tools/
-- Anthropic tool design: https://www.anthropic.com/engineering/writing-tools-for-agents
-- Gemini structured output: https://ai.google.dev/gemini-api/docs/structured-output
-- OWASP prompt injection: https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html
-- ALTERNATIVES.md D9–D10 from this repo.
-
-NotebookLM questions:
-1. Which guarantees can a schema provide and which require business validation?
-2. Why is structured JSON not enough for correctness?
-3. Where should exact inventory and price be computed/retrieved?
-4. What untrusted text from customer messages must never become authority?
-
-### Build
-
-Add deterministic validation and one source-of-truth tool:
-- inventory lookup or product/price lookup.
-
-Keep business values in data/config/source tables, not prompt text.
-
-### Eval cases
-
-At least 10 synthetic messages including:
-- misspelling;
-- missing quantity;
-- decimal quantity if invalid;
-- wrong/unknown price;
-- unknown SKU;
-- multiple items;
-- customer message containing instruction-like text.
-
-### Proof
-
-For every case record:
-- extraction;
+- proposed tool;
+- arguments;
 - validation result;
-- tool called/not called;
-- source value;
-- final status;
-- error/escalation if applicable.
+- tool result;
+- source/provenance.
 
-### Teach-back
+### Break / evaluate
 
-Explain why “the LLM returned valid JSON” is not evidence that the order is correct.
+- invalid tool argument;
+- unknown product;
+- unnecessary tool call;
+- product ambiguity;
+- tool error.
+
+### Day outcome
+
+You can draw the tool loop from memory and point to the exact line where LLM work ends and deterministic code begins.
 
 ---
 
-## Session 4 — Fri 2026-10-02
-# Evals + traces + decide whether a second agent is earned
+## Day 4 — Build the agent loop from first principles
 
-### Outcome
+### What you learn
 
-A repeatable eval harness exists, traces expose failures, and the first evidence-backed decision is made about whether seller aggregation should remain one capability or become a separate specialist agent.
+You learn the loop itself instead of hiding it behind a framework.
 
-### Architecture decisions
+A minimal agent loop repeatedly:
+
+1. assembles context;
+2. asks the model;
+3. inspects structured response/tool call;
+4. executes permitted tool;
+5. appends observation;
+6. asks again;
+7. stops on a clear completion condition.
+
+### Whole-picture position
+
+```text
+interpretation
+    ↓
+[AGENT LOOP] ← TODAY
+    ↙      ↘
+ tools    stop/final
+```
+
+The loop is the control mechanism that later frameworks abstract.
+
+### Depends on
+
+- Day 2 schemas;
+- Day 3 typed tools.
+
+### Unlocks
+
+- framework comparison;
+- stateful workflows;
+- retries;
+- specialist agents;
+- orchestrators.
+
+### Read online
+
+- S1 OpenAI Agents SDK overview.
+- S1 Anthropic building effective agents.
+- S3 Python asyncio tasks.
+- S6 Udemy framework-free/basic agent-loop lesson.
+
+### Read locally
+
+- `AGENT-ARCHITECTURE-GUIDE.md` §3–§5.
+- `COURSE.md` Steps 7–11 selectively.
+- `ALTERNATIVES.md` D6–D11.
+
+### Alternatives
 
 Compare:
-- one extraction/decision component;
-- single agent with tools;
-- specialist “message interpreter” + deterministic aggregation;
-- two specialist agents;
-- manager/orchestrator agent;
-- deterministic orchestrator;
-- graph/workflow.
+- raw while-loop;
+- OpenAI Agents SDK;
+- LangGraph;
+- Google ADK;
+- CrewAI Flow;
+- deterministic state machine with occasional model calls.
 
-No multi-agent implementation merely for practice. Split only if the mission boundary is real.
+### NotebookLM questions
 
-### COURSE/LifeOS mirror
+1. Which responsibilities belong to the loop regardless of framework?
+2. Which framework features are convenience vs architectural necessity?
+3. How can a loop run forever accidentally?
+4. What stop conditions are production-worthy?
+5. When should the loop be deterministic instead of model-controlled?
 
-- COURSE Step 12 — subagent/checker.
-- Step 13 — checkpoint/kata.
-- ALTERNATIVES D12.
-- Later preview: COURSE Steps 29–35 verification and Step 63 evals.
+### Implement
 
-### Notebook Source Pack
+Build a minimal loop without a multi-agent framework first.
 
-- OpenAI orchestration: https://openai.github.io/openai-agents-python/multi_agent/
-- OpenAI handoffs: https://openai.github.io/openai-agents-python/handoffs/
-- Anthropic building effective agents: https://www.anthropic.com/engineering/building-effective-agents
-- Google ADK workflows: https://google.github.io/adk-docs/workflows/
-- CrewAI Flows: https://docs.crewai.com/en/concepts/flows
-- LangGraph/LangChain multi-agent learning: https://docs.langchain.com/oss/python/learn
-- OpenAI tracing: https://openai.github.io/openai-agents-python/tracing/
-- OpenAI deterministic SDK testing: https://openai.github.io/openai-agents-python/testing/
-- LangSmith evaluation types: https://docs.langchain.com/langsmith/evaluation-types
+Requirements:
+- max iterations;
+- typed tool allowlist;
+- validation;
+- final-result schema;
+- tool error handling;
+- trace/run ID.
 
-### Build
+Then optionally reproduce the same behavior with one framework to understand the abstraction.
 
-Create a small eval dataset from the week’s examples.
+### Break / evaluate
 
-Deterministic checks first:
-- required fields;
-- valid product resolution;
-- expected tool call;
-- forbidden tool call;
-- exact inventory/price provenance;
-- structured-output validity.
+- infinite/ repeated tool request;
+- tool throws;
+- model asks for unavailable tool;
+- empty/invalid final result.
 
-Add subjective/model judge only if a truly subjective output exists.
+### Day outcome
 
-### Friday NotebookLM review
-
-With only this week’s sources selected:
-1. list the architectural decisions made;
-2. show source evidence for each;
-3. list disagreements among sources;
-4. generate a hard cumulative quiz;
-5. generate a Mind Map of message → model → validation → tools → state → output → eval.
-
-Boris answers the quiz closed-book before reading explanations.
-
-### Week-2 planning
-
-Inputs:
-- eval failures;
-- business process additions Boris provides;
-- architecture decisions still unresolved;
-- Upwork job patterns;
-- Udemy/LifeOS next mechanisms.
-
-Pull only the next week into Trello week sprint.
-
-### Proof
-
-Week 1 is complete only if:
-- the vertical slice runs;
-- deterministic truth is separated from model interpretation;
-- the eval set can be rerun;
-- at least one failure has been deliberately created and explained;
-- Boris can draw the current architecture from memory;
-- an ADR states whether another agent is justified yet and why.
+You understand the reusable control loop beneath agent frameworks.
 
 ---
 
-# 9. Week 2–4 — adaptive spine, not fabricated daily tasks
+## Day 5 — Evaluation, tracing and Week-1 capstone
 
-These are capability areas, not fixed dates. Friday planning decides sequence.
+### What you learn
 
-Potential areas:
-- seller aggregation state;
-- manager-level consolidation;
-- inventory reservation/availability logic;
-- customer/product entity resolution;
-- retries and idempotency;
+You learn that “it worked once” is not evidence.
+
+You build:
+- eval dataset;
+- deterministic assertions;
+- traces;
+- failure taxonomy.
+
+### Whole-picture position
+
+```text
+EVERY COMPONENT
+     ↓
+[TRACE + EVAL] ← TODAY
+     ↓
+architecture decisions based on evidence
+```
+
+Evaluation is not a final-week activity. It controls whether the architecture is allowed to grow.
+
+### Depends on
+
+- Days 1–4 working slice.
+
+### Unlocks
+
+- safe iteration;
+- provider/framework comparison;
+- multi-agent decision gates;
+- market-ready confidence.
+
+### Read online
+
+- S4 OpenAI tracing.
+- S4 OpenAI testing.
+- S4 LangSmith evaluation concepts.
+- S4 OWASP prompt injection prevention.
+
+### Read locally
+
+- `AGENT-ARCHITECTURE-GUIDE.md` §11–§13.
+- `CHECKLIST.md` verification/capability rules.
+- `COURSE.md` Step 13 and preview verification/evals sections.
+- `ALTERNATIVES.md` D12, D19, D20.
+
+### Alternatives
+
+Compare:
+- manual spot testing;
+- deterministic unit/integration evals;
+- golden datasets;
+- model-as-judge;
+- human review;
+- online production metrics.
+
+### NotebookLM questions
+
+1. Which properties can be checked deterministically?
+2. When is model-as-judge legitimate?
+3. What should an agent trace contain?
+4. What sensitive fields should not be logged?
+5. What failure patterns would justify changing the architecture?
+
+### Implement — Week 1 capstone
+
+Build a repeatable eval dataset of at least 15 messages.
+
+Check:
+- schema validity;
+- missing-field handling;
+- product resolution;
+- expected/forbidden tool calls;
+- exact tool provenance;
+- stop condition;
+- no invented inventory/price;
+- graceful error/escalation.
+
+### Weekly mastery gate
+
+Without notes, draw:
+
+```text
+message → schema → loop → tool → deterministic truth → result → trace/eval
+```
+
+Explain:
+- alternatives at every boundary;
+- one failure for each boundary;
+- why multiple agents are not yet automatically justified.
+
+**Week 1 portfolio artifact:** one small reliable order-intake agent slice with evals and architecture ADRs.
+
+---
+
+# Week 2 — State, memory, specialization and orchestration
+
+## Weekly whole-picture goal
+
+Week 1 produced one reliable loop.
+
+Week 2 answers:
+
+> How does this become a system that can handle a multi-message/multi-seller business process without turning every step into an agent?
+
+Target shape:
+
+```text
+messages
+   ↓
+interpretation
+   ↓
+ORDER / WORKFLOW STATE
+   ↓
+deterministic aggregation
+   ↓
+specialist reasoning capability only where justified
+   ↓
+orchestration choice
+   ↓
+manager-ready result
+   ↓
+eval + trace
+```
+
+### Depends on
+
+- reliable Week-1 loop;
+- structured outputs;
+- typed tools;
+- eval harness.
+
+### Unlocks
+
+- real seller aggregation;
+- manager aggregation;
+- human approvals;
+- later channel integration;
+- durable workflows;
+- production multi-agent architecture.
+
+---
+
+## Day 6 — State: what the system knows *during* a workflow
+
+### What you learn
+
+You learn the distinction between:
+- message/context;
+- run state;
 - durable workflow state;
-- memory vs database vs retrieval;
-- approval workflows;
-- Viber/Telegram/other channel integration;
-- queues/events;
-- observability;
-- specialist-agent boundaries;
-- orchestrator patterns;
+- business database;
+- memory.
+
+### Whole-picture position
+
+```text
+agent/tool loop
+    ↓
+[STATE] ← TODAY
+    ↓
+multiple messages / steps / retries
+```
+
+State makes multi-step behavior reliable. Without it, the system repeatedly reconstructs or guesses what happened.
+
+### Depends on
+
+- Week 1 schemas and loop.
+
+### Unlocks
+
+- seller aggregation;
+- resumability;
+- retries;
+- orchestration.
+
+### Read online
+
+- S1 Google ADK workflows.
+- S1 LangChain/LangGraph learning docs on state/workflows.
+- S3 Python typing/dataclasses or Pydantic where relevant.
+
+### Read locally
+
+- `AGENT-ARCHITECTURE-GUIDE.md` §7.
+- `ALTERNATIVES.md` D17–D18.
+- `COURSE.md` memory/state-relevant sections.
+
+### Alternatives
+
+Compare:
+- local in-memory state;
+- explicit state object;
+- relational workflow row;
+- event log/event sourcing;
+- framework checkpoint state;
+- reconstruct from transcript.
+
+### NotebookLM questions
+
+1. What is state vs memory?
+2. What should survive a process restart?
+3. What belongs in SQL instead of model context?
+4. How would event sourcing differ from updating one order aggregate row?
+5. What is the simplest sufficient design for seller aggregation today?
+
+### Implement
+
+Add an explicit `OrderSession` or equivalent state model.
+
+Process multiple synthetic customer messages into one seller-level draft aggregate.
+
+Do not use long-term “AI memory” for business truth.
+
+### Break / evaluate
+
+- duplicate message;
+- retry after failure;
+- conflicting update;
+- process restart simulation.
+
+### Day outcome
+
+You can explain where every piece of current workflow state lives and why.
+
+---
+
+## Day 7 — Memory and retrieval: choose storage by semantics
+
+### What you learn
+
+You learn that “memory” is not one feature.
+
+You separate:
+- state;
+- business facts;
+- profile/config;
+- policies/documents;
+- episodic history;
+- retrieval indexes;
+- transcript/archive.
+
+### Whole-picture position
+
+```text
+current workflow state
+        ↓
+facts that must survive
+        ↓
+[DB / MEMORY / RETRIEVAL] ← TODAY
+```
+
+### Depends on
+
+- Day 6 state semantics.
+
+### Unlocks
+
+- policies/procedures;
+- historical cases;
+- customer/product knowledge;
+- RAG when genuinely needed.
+
+### Read online
+
+- primary documentation for any storage/retrieval approach actually considered.
+- S1 framework memory/state docs if used.
+- do not pick a vector database yet unless a real semantic-retrieval problem exists.
+
+### Read locally
+
+- `AGENT-ARCHITECTURE-GUIDE.md` §7 and §9.
+- `ALTERNATIVES.md` D17–D18.
+
+### Alternatives
+
+From D17–D18 and architecture guide:
+- context-only;
+- Markdown/file memory;
+- relational DB;
+- temporal relational rows;
+- event log;
+- document store;
+- BM25;
+- vector search;
+- hybrid retrieval;
+- graph;
+- provider-managed memory;
+- no durable memory/recompute.
+
+### NotebookLM questions
+
+1. For each current business fact, where should it live?
+2. Which current data requires semantic retrieval? Maybe none.
+3. When does vector search lose to SQL/BM25?
+4. What should never be summarized away?
+5. What forgetting/versioning policy is required?
+
+### Implement
+
+Create a storage map for the current order process.
+
+Implement only the storage needed by the current build, likely structured data/state.
+
+Create at least one read-back test through a second path.
+
+### Break / evaluate
+
+- stale record;
+- old price vs current price;
+- duplicate entity;
+- missing history.
+
+### Day outcome
+
+You can reject “add a vector database” unless the process produces an actual retrieval need.
+
+---
+
+## Day 8 — Specialist agents: when another agent earns a mission
+
+### What you learn
+
+You learn to split by **reasoning boundary**, not organization chart.
+
+A specialist agent is justified when it needs materially different:
+- mission/instructions;
+- tools;
+- context;
+- eval set;
+- model;
+- lifecycle;
+- authority.
+
+### Whole-picture position
+
+```text
+reliable single agent + tools
+        ↓
+[SPECIALIZATION DECISION] ← TODAY
+        ↓
+possible specialist agents
+```
+
+### Depends on
+
+- reliable one-agent loop;
+- clear tool/state boundaries;
+- eval evidence.
+
+### Unlocks
+
+- multi-agent design;
+- parallel work;
+- isolation;
+- orchestrator decisions.
+
+### Read online
+
+- S1 OpenAI multi-agent.
+- S1 OpenAI handoffs.
+- S1 Anthropic effective agents.
+- S1 Google ADK agents.
+- S1 CrewAI flows.
+
+### Read locally
+
+- `AGENT-ARCHITECTURE-GUIDE.md` §6.
+- `COURSE.md` Step 12.
+- `ALTERNATIVES.md` D12.
+
+### Alternatives
+
+Compare:
+- one agent with tools;
+- agent-as-tool specialist;
+- handoff;
+- deterministic subroutine;
+- parallel model calls;
+- no split.
+
+### NotebookLM questions
+
+1. What problem does a second agent solve that a tool cannot?
+2. What new failure modes does delegation introduce?
+3. Compare agent-as-tool vs handoff.
+4. Which context should be isolated?
+5. For the current process, is message interpretation a true specialist mission yet?
+
+### Implement
+
+Take one candidate split, such as:
+- Order Interpreter
+- Seller Aggregation capability
+
+Design both versions:
+A. one agent + deterministic aggregation;
+B. specialist agent separation.
+
+Implement the simpler version first unless eval evidence favors the split.
+
+### Break / evaluate
+
+Compare:
+- correctness;
+- latency;
+- token/cost;
+- trace complexity;
+- handoff errors.
+
+### Day outcome
+
+Write ADR: **Does Agent #2 exist yet?**  
+“Yes” and “no” are both valid if evidence supports them.
+
+---
+
+## Day 9 — Orchestration: deterministic workflow vs manager agent
+
+### What you learn
+
+You learn orchestration patterns and when coordination itself needs reasoning.
+
+### Whole-picture position
+
+```text
+capabilities / specialist agents
+            ↓
+[ORCHESTRATION] ← TODAY
+            ↓
+manager-ready result / action
+```
+
+### Depends on
+
+- Day 8 specialist boundaries;
+- Day 6 state.
+
+### Unlocks
+
+- many sellers;
+- parallelism;
+- multi-step manager workflows;
+- durable production workflow.
+
+### Read online
+
+- S1 OpenAI multi-agent orchestration.
+- S1 Google ADK workflows.
+- S1 LangGraph.
+- S1 CrewAI Flows.
+- S3 Python asyncio.
+
+### Read locally
+
+- `AGENT-ARCHITECTURE-GUIDE.md` §6.
+- `ALTERNATIVES.md` D7, D11, D12, D23.
+
+### Alternatives
+
+Compare:
+- fixed sequential workflow;
+- router → deterministic branch;
+- orchestrator/manager agent;
+- specialists as tools;
+- handoffs;
+- graph/state machine;
+- event-driven queue;
+- parallel fan-out/fan-in;
+- human-directed routing.
+
+### NotebookLM questions
+
+1. Which orchestration decisions are deterministic in our current process?
+2. When does a manager agent add value?
+3. What can run concurrently?
+4. What state must the orchestrator own?
+5. How do retries/idempotency change the design?
+6. What is the simplest architecture that can later grow?
+
+### Implement
+
+Build a tiny orchestrated flow over synthetic data.
+
+Example:
+- interpret two seller batches;
+- obtain deterministic inventory;
+- aggregate result;
+- produce manager-ready draft.
+
+Start deterministic. Add agentic routing only if there is a real branch requiring judgment.
+
+### Break / evaluate
+
+- one branch fails;
+- one specialist times out;
+- duplicated batch;
+- concurrent inventory result differs;
+- orchestrator repeats work.
+
+### Day outcome
+
+You can explain the difference between business manager, manager agent, workflow orchestrator and deterministic aggregation.
+
+---
+
+## Day 10 — Week-2 capstone: evidence-backed architecture v1
+
+### What you learn
+
+You learn to integrate process, state, tools, agents, orchestration and evals into one architecture without over-agentifying the business.
+
+### Whole-picture position
+
+This is the first architecture checkpoint.
+
+### Depends on
+
+Everything in Weeks 1–2.
+
+### Unlocks
+
+Week 3+, which may include:
+- actual channel integration;
+- human approval;
+- durable DB;
+- authentication/security;
 - MCP;
-- RAG only where a real document-retrieval problem exists;
-- deployment/API/UI;
+- RAG if justified;
 - provider/model benchmarking;
-- real Upwork brief substitution.
+- deployment;
+- further business process stages.
 
-Every item must trace back to a real process need or a deliberate learning gap.
+### Read online
+
+Only sources needed to resolve the failures discovered during the week.
+
+### Read locally
+
+- Week 1–2 ADRs.
+- `AGENT-ARCHITECTURE-GUIDE.md` mastery gate.
+- relevant `CHECKLIST.md`.
+- `PROGRESS.md`.
+
+### NotebookLM weekly synthesis
+
+Select only sources actually used in Weeks 1–2.
+
+Ask:
+
+1. Reconstruct our current architecture from the sources and ADR claims.
+2. Which decisions are strongly evidenced?
+3. Which decisions remain assumptions?
+4. Where do the sources disagree?
+5. Generate a difficult cumulative quiz.
+6. Generate a Mind Map from business event to eval/audit.
+7. Give 5 architecture-change scenarios; Boris must decide what he would change and why.
+
+Answer closed-book first.
+
+### Implement — Week-2 capstone
+
+Produce:
+
+```
+build/agentic-finance/
+  architecture/
+    architecture-v1.md
+  decisions/
+    ADR-001...
+    ADR-00N...
+  src/
+  tests/
+  evals/
+  traces/
+```
+
+System should process a synthetic mini-batch:
+
+```text
+customer messages
+   ↓
+structured candidates
+   ↓
+seller grouping/state
+   ↓
+product/inventory tools
+   ↓
+aggregation / justified agent boundaries
+   ↓
+manager-ready draft
+   ↓
+trace + eval
+```
+
+### Required proof
+
+- architecture diagram;
+- runnable command;
+- automated tests/evals;
+- at least 20 representative cases;
+- deliberate failures;
+- ADR for each major boundary;
+- explanation of one rejected alternative at each major boundary;
+- closed-book architecture reconstruction.
+
+### Week-2 outcome
+
+You do not merely know the names of agent frameworks.
+
+You can take a real business slice and justify:
+- where LLMs belong;
+- where code belongs;
+- where data/state belongs;
+- whether multiple agents belong;
+- how coordination works;
+- how correctness is measured.
 
 ---
 
-# 10. Upwork learning loop
+# Weeks 3+ — adaptive, generated only after evidence
 
-Daily scan classification:
+Do not write detailed future daily lessons yet.
 
-## BUILD NOW
-You can deliver the core architecture safely with current skills.
+At the end of Week 2, generate Week 3 from:
 
-Action:
-- analyze fit;
-- identify proof/portfolio evidence;
-- consider bidding immediately.
+```text
+new business-process details
++ failures/eval results
++ architecture gaps
++ NotebookLM weak areas
++ Upwork demand
++ Udemy/LifeOS mechanisms not yet mastered
+= next weekly part
+```
 
-## LEARN GAP
-The job is strongly aligned but exposes one or two missing capabilities.
+Likely future modules, only when justified:
 
-Action:
-- name the precise gap;
-- decide whether it belongs in the learning path;
-- if yes, add it to Agentic Finance backlog;
-- do not let unrelated job requirements hijack the curriculum.
-
-## SKIP
-Weak domain fit, unrealistic brief, poor learning value, unsafe scope, or demand that does not strengthen the target profession.
-
-Preferred market intersection:
-**finance/ERP/operations expertise + software engineering + production agent architecture.**
-
-Do not compete primarily as “someone who knows an agent framework.”
-
----
-
-# 11. Daily card contract
-
-Every Trello learning card should contain:
-
-**Outcome**
-
-**Business reason**
-
-**Agent concept**
-
-**Architecture location**
-
-**Sources**
-
-**Decision**
-
-**Alternatives**
-
-**Build**
-
-**Break it**
-
-**Proof/eval**
-
-**Teach-back**
-
-**Artifact**
-
-**Reconsider when**
-
-The card is Done only when proof and teach-back pass.
+- human approval and consequential actions;
+- Viber/Telegram/channel adapters;
+- identity/auth/tenant isolation;
+- durable SQL state and event processing;
+- retries/idempotency/queues;
+- MCP;
+- policies/documents and RAG;
+- model/provider benchmarking and routing;
+- observability/cost;
+- deployment/API/UI;
+- accounting/finance specialist agents;
+- wider 9_Tones business process;
+- external Upwork brief as transfer exam.
 
 ---
 
-# 12. Mastery standard
+# Definition of mastery
 
-For every major component be able to:
+For every major component, Boris must be able to:
+
 1. explain the problem it solves;
-2. locate it in the system;
-3. explain inputs/outputs;
-4. distinguish model vs deterministic code;
-5. describe serious alternatives;
-6. explain when alternatives win;
-7. break/test it deliberately;
-8. direct a similar build with AI without copying the original.
+2. place it in the whole architecture;
+3. state what it depends on;
+4. state what depends on it;
+5. explain inputs/outputs;
+6. distinguish LLM reasoning from deterministic code;
+7. name serious alternatives;
+8. explain when those alternatives win;
+9. break/test it deliberately;
+10. direct a similar implementation with AI without copying the original.
 
-That is the standard for “I know it.”
+If a day produces code but not this understanding, the day is not complete.
